@@ -2,6 +2,8 @@
     (function ($) {
 
         cardNumberFiledSelector = $("input[name='card[pan]']");
+        cardBrandDetector(cardNumberFiledSelector.val());
+
         cardNumberFiledSelector.keyup(function(){
             var number = $(this).val();
             cardBrandDetector(number);
