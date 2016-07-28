@@ -1,48 +1,43 @@
 <?php
 
 /* @vat $this the instnce of WC_Gateway_Payfull */
-
 wp_enqueue_script( 'wc-credit-card-form' );
-//$default_args = array(
-//    'fields_have_names' => true, // Some gateways like stripe don't need names as the form is tokenized.
-//);
-//$args = wp_parse_args( $args, apply_filters( 'woocommerce_credit_card_form_args', $default_args, $this->id ) );
 $IDS = [
-    'bank' => "{$id}-bank",
-    'gateway' => "{$id}-gateway",
-    'cardset' => "{$id}-cardset",
-    'holder' => "{$id}-card-holder",
-    'pan' => "{$id}-card-number",
-    'expiry' => "{$id}-card-expiry",
-    'cvc' => "{$id}-card-cvc",
-    'use3d-label' => "{$id}-use3d-label",
-    'use3d' => "{$id}-use3d",
-    'pay-onetime' => "{$id}-pay-onetime",
-    'installment' => "{$id}-installment",
-    'pay-taksit' => "{$id}-pay-taksit",
-    'use3d-row' => "{$id}-use3d-row",
-    'taksit-table' => "{$id}-taksit-table",
+    'bank'              => "{$id}-bank",
+    'gateway'           => "{$id}-gateway",
+    'cardset'           => "{$id}-cardset",
+    'holder'            => "{$id}-card-holder",
+    'pan'               => "{$id}-card-number",
+    'expiry'            => "{$id}-card-expiry",
+    'cvc'               => "{$id}-card-cvc",
+    'use3d-label'       => "{$id}-use3d-label",
+    'use3d'             => "{$id}-use3d",
+    'pay-onetime'       => "{$id}-pay-onetime",
+    'installment'       => "{$id}-installment",
+    'pay-taksit'        => "{$id}-pay-taksit",
+    'use3d-row'         => "{$id}-use3d-row",
+    'taksit-table'      => "{$id}-taksit-table",
 ];
     
 $LBLS = [
-    'holder' => __( 'Card Holder', 'woocommerce' ),
-    'pan' => __( 'Card Number', 'woocommerce' ),
-    'expiry' => __( 'Expiry (MM/YY)', 'woocommerce' ),
-    'cvc' => __( 'Card Code', 'woocommerce' ),
-    'use3d' => __( 'Use 3D Secure', 'payfull' ),
-    'pay-onetime' => __("Pay one shot", "payfull"),
-    'installment' => __("installment", "payfull"),
-    'pay-taksit' => __("Pay with installment", "payfull"),
-    'total' => __("Total", "payfull"),
+    'holder'        => __( 'Name on Card', 'woocommerce' ),
+    'pan'           => __( 'Credit Card Number', 'woocommerce' ),
+    'expiry'        => __( 'Expiry (MM/YY)', 'woocommerce' ),
+    'cvc'           => __( 'Card Verification Number', 'woocommerce' ),
+    'use3d'         => __( 'Use 3D secure Payments System', 'payfull' ),
+    'pay-onetime'   => __("Pay one shot", "payfull"),
+    'installment'   => __("installment", "payfull"),
+    'pay-taksit'    => __("Pay with installment", "payfull"),
+    'total'         => __("Total", "payfull"),
 ];
 
 $VALS = [
-    'bank' => isset($form['bank']) ? $form['bank'] : '',
-    'gateway' => isset($form['gateway']) ? $form['gateway'] : '',
-    'holder' => isset($form['card']['holder']) ? $form['card']['holder'] : '',
-    'pan' => isset($form['card']['pan']) ? $form['card']['pan'] : '',
-    'expiry' => isset($form['card']['expiry']) ? $form['card']['expiry'] : '',
-    'cvc' => isset($form['card']['cvc']) ? $form['card']['cvc'] : '',
+    'bank'      => isset($form['bank']) ? $form['bank'] : '',
+    'gateway'   => isset($form['gateway']) ? $form['gateway'] : '',
+    'holder'    => isset($form['card']['holder']) ? $form['card']['holder'] : '',
+    'pan'       => isset($form['card']['pan']) ? $form['card']['pan'] : '',
+    'expiry'    => isset($form['card']['expiry']) ? $form['card']['expiry'] : '',
+    'cvc'       => isset($form['card']['cvc']) ? $form['card']['cvc'] : '',
 ];
 
 if($use_installments_table) {
@@ -62,7 +57,7 @@ if($use_installments_table) {
 
         <p class="form-row form-row-wide">
             <label for="<?php echo $IDS['pan']; ?>"><?php echo $LBLS['pan']; ?> <span class="required">*</span></label>
-            <input id="<?php echo $IDS['pan']; ?>" value="<?php echo $VALS['pan']; ?>" class="input-text wc-credit-card-form-card-number" type="text" maxlength="20" autocomplete="off" placeholder="•••• •••• •••• ••••" name="card[pan]" />
+            <input id="<?php echo $IDS['pan']; ?>" value="<?php echo $VALS['pan']; ?>" class="input-text wc-credit-card-form-card-number input-cc-number-not-supported" type="text" maxlength="20" autocomplete="off" placeholder="•••• •••• •••• ••••" name="card[pan]" />
         </p>
 
         <p class="form-row form-row-first">
@@ -119,23 +114,23 @@ if($use_installments_table) {
 
 <?php
 $this->renderView(__DIR__."/taksit.js.php", [
-    'IDS' => $IDS,
-    'total' => $order->get_total(),
-    'currency' => $order->get_order_currency(),
-    'symbol' => $symbol,
-    'T' => $LBLS, 
+    'IDS'       => $IDS,
+    'total'     => $order->get_total(),
+    'currency'  => $order->get_order_currency(),
+    'symbol'    => $symbol,
+    'T'         => $LBLS,
 ]);
 
 if($use_installments_table) {
     $this->renderView(__DIR__."/taksit-table.js.php", [
-        'symbol' => $symbol,
-        'T' => $LBLS, 
+        'symbol'    => $symbol,
+        'T'         => $LBLS,
     ]);
 } else {
     $this->renderView(__DIR__."/taksit-droplist.js.php", [
-        'symbol' => $symbol,
-        'T' => $LBLS, 
-        'drop_id' => $IDS['installment'],
+        'symbol'    => $symbol,
+        'T'         => $LBLS,
+        'drop_id'   => $IDS['installment'],
     ]);
 }
 ?>

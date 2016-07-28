@@ -437,20 +437,24 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         }
         if(!isset($form['card']['pan']) || empty($form['card']['pan'])) {
             $errors[] = __('Card number cannot be empty.', 'payfull');
+        }elseif(!$this->checkCCNumber($form['card']['pan'])){
+            $errors[] = __('Please enter a valid credit card number.', 'payfull');
         }
         if(!isset($form['card']['expiry']) || empty($form['card']['expiry'])) {
             $errors[] = __('Card expiry date cannot be empty.', 'payfull');
-        }
-        if(!isset($form['card']['cvc']) || empty($form['card']['cvc'])) {
-            $errors[] = __('CVC date cannot be empty.', 'payfull');
-        } else {
+        }else {
             $v = explode('/', $form['card']['expiry']);
             $m = isset($v[0]) ? intval($v[0]) : -1;
             $y = isset($v[1]) ? intval($v[1]) : -1;
             $y += ($y>0 && $y < 99) ? 2000 : 0;
             if($m<1 || $m > 12 || $y < date('Y')) {
-                $errors[] = __('The expiry date is invalide or already expired', 'payfull');
+                $errors[] = __('The expiry date is invalid or already expired', 'payfull');
             }
+        }
+        if(!isset($form['card']['cvc']) || empty($form['card']['cvc'])) {
+            $errors[] = __('CVC date cannot be empty.', 'payfull');
+        }elseif(isset($form['card']['pan']) AND !$this->checkCCCVC($form['card']['pan'], $form['card']['cvc'])){
+            $errors[] = __('Please enter a valid credit card verification number.', 'payfull');
         }
         
         if(!isset($form['installment']) || intval($form['installment'])<1) {
@@ -459,7 +463,43 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         
         return count($errors) ? $errors : true;
     }
-    
+
+    protected function checkCCNumber($cardNumber){
+        $cardNumber = preg_replace('/\D/', '', $cardNumber);
+        $len = strlen($cardNumber);
+        if ($len < 15 || $len > 16) {
+            return false;
+        }else {
+            switch($cardNumber) {
+                case(preg_match ('/^4/', $cardNumber) >= 1):
+                    return true;
+                    break;
+                case(preg_match ('/^5[1-5]/', $cardNumber) >= 1):
+                    return true;
+                    break;
+                default:
+                    return false;
+                    break;
+            }
+        }
+    }
+
+    protected function checkCCCVC($cardNumber, $cvc){
+        // Get the first number of the credit card so we know how many digits to look for
+        $firstnumber = (int) substr($cardNumber, 0, 1);
+        if ($firstnumber === 3){
+            if (!preg_match("/^\d{4}$/", $cvc)){
+                // The credit card is an American Express card but does not have a four digit CVV code
+                return false;
+            }
+        }
+        else if (!preg_match("/^\d{3}$/", $cvc)){
+            // The credit card is a Visa, MasterCard, or Discover Card card but does not have a three digit CVV code
+            return false;
+        }
+        return true;
+    }
+
     protected  function renderView($_viewFile_,$_data_=null,$_return_=false)
     {
         if(is_array($_data_)) {
