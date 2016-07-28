@@ -1,0 +1,171 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2016-01-10 23:30+0200\n"
+"PO-Revision-Date: 2016-01-10 23:30+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.4\n"
+"X-Poedit-Basepath: ../..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: src/WC_Getway_PayFull.php:22
+msgid "PayFull"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:23
+msgid "Process payment via PayFull service."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:24
+msgid "Proceed to PayFull"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:66
+msgid "Enable"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:68
+msgid "Enable/Disable PayFull checkout."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:72
+msgid "Title"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:74
+msgid "Set the title which the user sees during checkout."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:75
+msgid "PayFull Checkout"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:78
+msgid "Description"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:80
+msgid "The message to display during checkout."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:81
+msgid "Pay with PayFull payment service."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:84
+msgid "Frame Options"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:87
+msgid ""
+"JSON string that represents the HTML attributes to use in rendering the "
+"payment form."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:90
+msgid "API Url"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:92
+msgid "The api url to PayFul service."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:96
+msgid "Mode"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:99
+msgid "Test"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:99
+msgid "Live"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:100
+msgid "Set PayFull in \"test\" or \"live\" mode."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:103
+msgid "Installments"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:106
+msgid "Enabled"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:106
+msgid "Disabled"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:107
+msgid "Enable or Disable payment with installments."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:110
+msgid "Redirect Button"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:112
+msgid "Back to Shop"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:113
+msgid "The text to display in the redirect link after the successful payment"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:116
+msgid "Redirect Time"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:119
+msgid ""
+"The time to wait before redirecting to shopping page. You can use {timer} to "
+"display a timer in the thanks message."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:122
+msgid "Thanks Message"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:124
+msgid ""
+"The order is paid successfully. You will be redirected in {timer} seconds."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:125
+msgid ""
+"The message to display when the payment is finished successfully. You can "
+"use {timer} to display a time remaing for redirecting."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:150
+msgid "Failed to process the payment because of invalid order"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:191 src/WC_Getway_PayFull.php:222
+msgid "Error Code"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:214 src/WC_Getway_PayFull.php:231
+msgid "Bad request"
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:215
+msgid "Invalid data received from payment service."
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:232
+msgid "Invalid status for the requested order "
+msgstr ""
+
+#: src/WC_Getway_PayFull.php:247
+msgid "Payment Succeeded"
+msgstr ""
