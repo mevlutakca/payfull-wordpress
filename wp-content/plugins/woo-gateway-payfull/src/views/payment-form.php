@@ -145,3 +145,6 @@ if($use_installments_table) {
         payfull.run();
     })(jQuery);
 </script>
+
+<?php $this->renderView(__DIR__."/card-brand.js.php");?>
+<?php $this->renderView(__DIR__."/card-brand.css.php");?>
