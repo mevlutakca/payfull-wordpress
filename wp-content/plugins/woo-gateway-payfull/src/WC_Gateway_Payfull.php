@@ -14,7 +14,10 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
     public $password = null;
     public $custom_css = null;
     public $endpoint = null;
-    public $installments_type = "list";
+    public $enable_3dSecure = 1;
+    public $enable_installment = 1;
+    public $currency_class;
+    public $total_selector;
     /**
      * @var array the HTML attributes to resner the iframe
      */
@@ -44,7 +47,10 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         $this->password = $this->get_option('password');
         $this->custom_css = $this->get_option('custom_css');
         $this->endpoint = $this->get_option('endpoint');
-        $this->installments_type = $this->get_option('installments_type');
+        $this->currency_class = $this->get_option('currency_class');
+        $this->total_selector = $this->get_option('total_selector');
+        $this->enable_3dSecure = $this->get_option('enable_3dSecure');
+        $this->enable_installment = $this->get_option('enable_installment');
 
         if($register_hooks) {
             add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'receipt_page' ) );
@@ -131,7 +137,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             'enabled' => [
                 'title' => __('Enabled', 'payfull'),
                 'type' => 'checkbox',
-//                'description' => __('Enable/Disable "Payfull" checkout.', 'payfull'),
+                //'description' => __('Enable/Disable "Payfull" checkout.', 'payfull'),
                 'default' => 'yes',
             ],
             'title' => [
@@ -164,28 +170,42 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
                 'default' => '',
                 // 'description' => __('', 'payfull'),
             ),
-            'installments_type' => array(
-                'title' => __('Installment Type', 'payfull'),
+            'enable_3dSecure' => array(
+                'title' => __('Enable 3D secure', 'payfull'),
                 'type' => 'select',
-               'options'     => array(
-                    self::INSTALLMENTS_TYPE_LIST          => __( 'Drop down list', 'payfull' ),
-                    self::INSTALLMENTS_TYPE_TABLE         => __( 'Detailed Table', 'payfull' ),
-                ),
-                'description' => __('Choose how to render installments option.', 'payfull'),
+                'options'     => array(__( 'No', 'payfull' ),__( 'Yes', 'payfull' )),
+                'description' => __('Choose whether to enable 3D secure payament option.', 'payfull'),
+            ),
+            'enable_installment' => array(
+                'title' => __('Enable Installment', 'payfull'),
+                'type' => 'select',
+                'options'     => array(__( 'No', 'payfull' ),__( 'Yes', 'payfull' )),
+                'description' => __('Choose whether to enable installment option.', 'payfull'),
+            ),
+            'total_selector' => array(
+                'title' => __('Total Selector', 'payfull'),
+                'type' => 'text',
+                'default' => '.order_details .amount',
+                'description' => __('A jQuery selector of the HTML element that contains the total amount in checkout page.', 'payfull'),
+            ),
+            'currency_class' => array(
+                'title' => __('Currency Class', 'payfull'),
+                'type' => 'text',
+                'default' => 'woocommerce-Price-currencySymbol',
+                'description' => __('The CSS class(es) to be applied to the curreny on checkout page', 'payfull'),
             ),
             'custom_css' => [
                 'title' => __('Custom Css', 'payfull'),
                 'type' => 'textarea',
                 'default' => file_get_contents (WP_PLUGIN_DIR. '/woo-gateway-payfull/assets/custom.css'),
-//                'description' => __('Customiz the installments table.', 'payfull'),
+                // 'description' => __('Customiz the installments table.', 'payfull'),
             ],
         ];
     }
 
     function process_payment( $order_id ) {
     	global $woocommerce;
-        
-    	$order      = wc_get_order( $order_id );
+        $order      = wc_get_order( $order_id );
         
         if(!$order) {
             wc_add_notice( __('Failed to process the payment because of invalid order', 'payfull'), 'error' );
@@ -276,24 +296,37 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             'order' => $order,
             'args' => $args,
             'form' => $data,
-            'symbol' => get_woocommerce_currency_symbol($order->get_order_currency()),
+            'total_selector' => $this->get_option('total_selector'),
+            'currency_class' => $this->get_option('currency_class'),
+            'currency_symbol' => get_woocommerce_currency_symbol($order->get_order_currency()),
             'custom_css' => $this->get_option('custom_css'),
-            'use_installments_table' => $this->installments_type==self::INSTALLMENTS_TYPE_TABLE
+            'enable_3dSecure' => intval($this->enable_3dSecure) === 1,
+            'enable_installment' => intval($this->enable_installment)===1,
         ]);
         do_action( 'woocommerce_credit_card_form_end', $this->id );
     }
     
     protected function sendPayment($order, $data)
     {
+        $use3d = 0;
+        $installments = 1;
         $card = isset($data['card']) ? $data['card'] : null;
-        $use3d = isset($data['use3d']) ? ($data['use3d']=="true") : false;
+        
+        if($this->enable_3dSecure && isset($data['use3d'])) {
+            $use3d = ($data['use3d']=="true");
+        }
+
+        if($this->enable_installment && isset($data['installment'])) {
+            $installments = intval($data['installment']);
+            $installments = $installments <=0 ? 1 : $installments;
+        }
         
         $fname = $order->billing_first_name;
         $lname = $order->billing_last_name;
-
-        $installments = intval($data['installment']);
-        $expiry = array_map('trim', explode('/', $card['expiry']));
         $order->update_status('wc-pending', 'Process payment by Payfull');
+
+        $total = $order->get_total();
+
         
         $request = [
             'total' => $order->get_total(),
@@ -302,8 +335,8 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             'passive_data' => $order->id,//json_encode(['order-id' => $order->id]),
             'cc_name' => $card['holder'],
             'cc_number' => str_replace(' ', '', $card['pan']),
-            'cc_month' => $expiry[0],
-            'cc_year' => (strlen($expiry[1])==2 ? "20" : "").$expiry[1],
+            'cc_month' => $card['month'],
+            'cc_year' => $card['year'],
             'cc_cvc' => $card['cvc'],
             'customer_firstname' => $fname,
             'customer_lastname' => $lname,
@@ -312,9 +345,22 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             'payment_title' => "{$fname} {$lname} | order $order->id | ".$order->get_total().$order->get_order_currency(),
         ];
 
+        $fee = 10;
         if($installments > 1) {
-            $request['bank_id'] = $data['bank'];
-            $request['gateway'] = $data['gateway'];
+            $installments = 5;
+            $bank_id = isset($data['bank']) ? $data['bank'] : null;
+            $gateway = isset($data['gateway']) ? $data['gateway'] : null;
+
+            if(!isset($gateway, $bank_id)) {
+                wc_add_notice( __('Invalid installment information.', 'payfull'), 'error' );
+                return;
+            }
+            
+            $fee = $this->payfull()->getCommission($total, $bank_id, $installments);
+            WC()->session->set( 'installment_fee', $fee );
+
+            $request['bank_id'] = $bank_id;
+            $request['gateway'] = $gateway;
         }
 
         if($use3d) {
@@ -323,6 +369,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
 
             $request['use3d'] = 1;
             $request['return_url'] = $return_url;
+            var_dump($return_url);exit;
         }
         
         $response = $this->payfull()->send('Sale', $request, !$use3d);
@@ -346,56 +393,57 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         }
     }
 
-    function check_payment_response()
+    protected function check_payment_response()
     {
         global $woocommerce;
-        
-        if ( ! defined( 'ABSPATH' ) ) {
-            throw new \Exception('Wordpress is not running.');
-        }
-        if(!defined('WOOCOMMERCE_VERSION')) {
-            throw new \Exception('WooCommerce is not running.');
-        }
+        die('dkf.ndfnd');
+        // if ( ! defined( 'ABSPATH' ) ) {
+        //     throw new \Exception('Wordpress is not running.');
+        // }
+        // if(!defined('WOOCOMMERCE_VERSION')) {
+        //     throw new \Exception('WooCommerce is not running.');
+        // }
 
-        $order_id = isset($_GET['order-id']) ? $_GET['order-id'] : null;
-        $order = wc_get_order($order_id);
+        // $order_id = isset($_GET['order-id']) ? $_GET['order-id'] : null;
+        // $order = wc_get_order($order_id);
         
         
-        $type = "error";
-        $title = __('Bad request', 'payfull');
-        $data = $_POST;
-        array_walk_recursive($data, function(&$item) {
-            $item = sanitize_text_field($item);
-        });
+        // $type = "error";
+        // $title = __('Bad request', 'payfull');
+        // $data = $_POST;
+        // print_r($data);;exit;
+        // array_walk_recursive($data, function(&$item) {
+        //     $item = sanitize_text_field($item);
+        // });
             
-        $redirect_url = $woocommerce->cart->get_checkout_url();
-        $status = isset($data['status']) ? $data['status'] : null;
+        // $redirect_url = $woocommerce->cart->get_checkout_url();
+        // $status = isset($data['status']) ? $data['status'] : null;
         
-        if(!isset($order)) {
-            $message = __('Invalid data received from payment service.', 'payfull');
-        }
-        else if(!$order || $order->post_status != 'wc-pending' || $order->status=='completed') {
-            $message = __('Invalid status for the requested order'. ' '.$order_id.'.', 'payfull');
-        }
-        else {
-            if($this->processPaymentResponse($order, $response)) {
-                $redirect_url = $order->get_checkout_order_received_url();
-                wp_redirect($redirect_url); 
-                exit;
-            }
-            else {
-                $order->update_status('wc-failed', '3D Payment failed');
-                //$order->add_order_note('3D Payment failed. Response: <pre>'.print_r($response, 1).'</pre>');
-                $message = isset($data['ErrorMSG']) ? $data['ErrorMSG'] :  __('Unexpected error occured while processing your request.', 'payfull');
-            }
-        }
+        // if(!isset($order)) {
+        //     $message = __('Invalid data received from payment service.', 'payfull');
+        // }
+        // else if(!$order || $order->post_status != 'wc-pending' || $order->status=='completed') {
+        //     $message = __('Invalid status for the requested order'. ' '.$order_id.'.', 'payfull');
+        // }
+        // else {
+        //     if($this->processPaymentResponse($order, $response)) {
+        //         $redirect_url = $order->get_checkout_order_received_url();
+        //         wp_redirect($redirect_url); 
+        //         exit;
+        //     }
+        //     else {
+        //         $order->update_status('wc-failed', '3D Payment failed');
+        //         //$order->add_order_note('3D Payment failed. Response: <pre>'.print_r($response, 1).'</pre>');
+        //         $message = isset($data['ErrorMSG']) ? $data['ErrorMSG'] :  __('Unexpected error occured while processing your request.', 'payfull');
+        //     }
+        // }
         
-        if($type=='error') {
-            $order->add_order_note('Payment failed. Response:<pre>' . print_r($data, 1).'</pre>');
-        }
+        // if($type=='error') {
+        //     $order->add_order_note('Payment failed. Response:<pre>' . print_r($data, 1).'</pre>');
+        // }
 
-        wc_add_notice($message, $type);
-        wp_redirect($redirect_url);        
+        // wc_add_notice($message, $type);
+        // wp_redirect($redirect_url);        
     }
     
     protected function processPaymentResponse($order, $response)
@@ -403,10 +451,12 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         if(isset($response['status']) && $response['status']) {
             $xid = $response['transaction_id'];
             if(empty($xid)) {
-                print_r($response);
-                exit;
+                $order->add_order_note("Invalid response: <pre>".print_r($response,1)."</pre>");
+                wc_add_notice( __('Invalid response receeived from payment gateway', 'payfull'), 'error' );
+                return false;
             }
             $order->add_order_note("Payment Via Payfull, Transaction ID: {$xid}");
+            $this->saveOrderComission($order, WC()->session->get('installment_fee', 0));
             $order->update_status('wc-processing', "Payment succeeded. Transaction ID: {$xid}");
             //$order->reduce_order_stock();
             $order->payment_complete($xid);
@@ -426,7 +476,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         }
     }
 
-        /**
+    /**
      * @return boolyean|array true on success otherwise it resturns array of errors
      */
     protected function validatePaymentForm($form)
@@ -440,28 +490,47 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         }elseif(!$this->checkCCNumber($form['card']['pan'])){
             $errors[] = __('Please enter a valid credit card number.', 'payfull');
         }
-        if(!isset($form['card']['expiry']) || empty($form['card']['expiry'])) {
-            $errors[] = __('Card expiry date cannot be empty.', 'payfull');
-        }else {
-            $v = explode('/', $form['card']['expiry']);
-            $m = isset($v[0]) ? intval($v[0]) : -1;
-            $y = isset($v[1]) ? intval($v[1]) : -1;
+
+        if(!isset($form['card']['year']) || empty($form['card']['year'])) {
+            $errors[] = __('Card expiration year cannot be empty.', 'payfull');
+        } else {
+            $y = intval($form['card']['year']);
             $y += ($y>0 && $y < 99) ? 2000 : 0;
-            if($m<1 || $m > 12 || $y < date('Y')) {
-                $errors[] = __('The expiry date is invalid or already expired', 'payfull');
+            if($y < date('Y')) {
+                $errors[] = __('The expiration year is invalid', 'payfull');
+            }
+        }
+
+        if(!isset($form['card']['month']) || empty($form['card']['month'])) {
+            $errors[] = __('Card expiration month cannot be empty.', 'payfull');
+        }else {
+            $m = intval($form['card']['month']);
+            if($m<1 || $m > 12) {
+                $errors[] = __('The expiration month is invalid: '.var_export($form['card']['month'], 1), 'payfull');
             }
         }
         if(!isset($form['card']['cvc']) || empty($form['card']['cvc'])) {
-            $errors[] = __('CVC date cannot be empty.', 'payfull');
+            $errors[] = __('Card CVC cannot be empty.', 'payfull');
         }elseif(isset($form['card']['pan']) AND !$this->checkCCCVC($form['card']['pan'], $form['card']['cvc'])){
             $errors[] = __('Please enter a valid credit card verification number.', 'payfull');
         }
         
-        if(!isset($form['installment']) || intval($form['installment'])<1) {
+        if($this->enable_installment && (!isset($form['installment']) || intval($form['installment'])<1)) {
             $errors[] = __('The installment value must be a positive integer.', 'payfull');
         }
         
         return count($errors) ? $errors : true;
+    }
+
+    protected function saveOrderComission($order, $amount)
+    {
+        $fee = new stdClass();
+        $fee->tax = 0;
+        $fee->amount = $amount;
+        $fee->taxable = false;
+        $fee->name = __('Installment Commission', 'payfull');
+        $order->add_fee($fee);
+        $order->calculate_totals();
     }
 
     protected function checkCCNumber($cardNumber){

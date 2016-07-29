@@ -41,6 +41,34 @@ class PayfullService {
             'get_param' => 'Installments',
         ]);
     }
+
+    public function getCommission($amount, $bankId, $installmentCount)
+    {
+        if($installmentCount===1) {
+            return 0;
+        }
+
+        $bankId = strtolower($bankId);
+
+        $banks = $this->banks();
+        $valid = isset($banks['status'], $banks['data']) && $banks['status'] && is_array($banks['data']);
+        if(!$valid) { return 0; }
+        
+        foreach ($banks['data'] as $b) {
+            if(strtolower($b['bank']) === $bankId) {
+                $installments = isset($b['installments']) ? $b['installments'] : null;
+                if(!is_array($installments)) { return 0; }
+                foreach($installments as $ins) {
+                    if(isset($ins['count']) && $ins['count']==$installmentCount) {
+                        $precentage = isset($ins['commission']) ? floatval(strtr($ins['commission'], ['%'=>''])) : 0;
+                        return  floatVal($amount)*$precentage/100;
+                    }
+                }
+                return 0;
+            }
+        }
+        return 0;
+    }
     
     public function refund($transaction_id, $amount)
     {
