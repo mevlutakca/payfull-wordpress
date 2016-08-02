@@ -23,7 +23,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
      */
     public $options = [];
 
-    public function __construct($register_hooks=true)
+    public function __construct($register_hooks=false)
     {
         $this->id = 'woo_gateway_payfull';
         $this->icon = plugins_url('woo-gateway-payfull/assets/img/icon.png');
@@ -53,9 +53,10 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         $this->enable_installment = $this->get_option('enable_installment');
 
         if($register_hooks) {
+            //$this->initApiService();
             add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'receipt_page' ) );
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-            add_action( 'woocommerce_api_'.strtolower(__CLASS__), array( $this, 'check_payment_response' ) );
+            add_action( 'woocommerce_api_'.strtolower(__CLASS__), array( &$this, 'check_payment_response' ) );
         }
     }
     
@@ -256,8 +257,8 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
                 $order->add_order_note("Refunding {$crcy} {$amount} succeeded. Transaction Id: ".$response['transaction_id']);
                 return true;
             }
-            
-            $order->add_order_note("Refunding {$crcy} {$amount} failed. Response: <pre>".print_r($response,1)."</pre>");
+            $error = $this->getErrorMessage($response,"Unknown error occured");
+            $order->add_order_note("Refunding {$crcy} {$amount} failed. ".$error);
         }
         
         return false;
@@ -369,17 +370,16 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
 
             $request['use3d'] = 1;
             $request['return_url'] = $return_url;
-            var_dump($return_url);exit;
         }
         
         $response = $this->payfull()->send('Sale', $request, !$use3d);
         
         if($use3d) {
             if(strpos($response, '<html>')===false) {
-                $error = isset($response['ErrorMSG']) ? $response['ErrorMSG'] : __('Processing payment failed.', 'payfull');
+                $error = $this->getErrorMessage($response,__('Invalid response received.', 'payfull'));
                 //$order->update_status('wc-failed', $error);
                 wc_add_notice( $error, 'error' );
-                $order->add_order_note('3D Payment failed. Response:<pre>' . print_r($response, 1).'</pre>');
+                $order->add_order_note('Fail to pay in 3D secure. ' . $error);
                 return;
             }
             echo $response;
@@ -387,63 +387,69 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         }
         
         if($this->processPaymentResponse($order, $response)) {
+            $message = __('Thank you for shopping with us. Your transaction is succeeded.', 'payfull');
+            wc_add_notice($message);
             $thank_url = $order->get_checkout_order_received_url();
             wp_redirect($thank_url);
             exit;
         }
     }
 
-    protected function check_payment_response()
+    public function check_payment_response()
     {
         global $woocommerce;
-        die('dkf.ndfnd');
-        // if ( ! defined( 'ABSPATH' ) ) {
-        //     throw new \Exception('Wordpress is not running.');
-        // }
-        // if(!defined('WOOCOMMERCE_VERSION')) {
-        //     throw new \Exception('WooCommerce is not running.');
-        // }
+        
+        if ( ! defined( 'ABSPATH' ) ) {
+            throw new \Exception('Wordpress is not running.');
+        }
+        if(!defined('WOOCOMMERCE_VERSION')) {
+            throw new \Exception('WooCommerce is not running.');
+        }
 
-        // $order_id = isset($_GET['order-id']) ? $_GET['order-id'] : null;
-        // $order = wc_get_order($order_id);
         
         
-        // $type = "error";
-        // $title = __('Bad request', 'payfull');
-        // $data = $_POST;
-        // print_r($data);;exit;
-        // array_walk_recursive($data, function(&$item) {
-        //     $item = sanitize_text_field($item);
-        // });
-            
-        // $redirect_url = $woocommerce->cart->get_checkout_url();
-        // $status = isset($data['status']) ? $data['status'] : null;
         
-        // if(!isset($order)) {
-        //     $message = __('Invalid data received from payment service.', 'payfull');
-        // }
-        // else if(!$order || $order->post_status != 'wc-pending' || $order->status=='completed') {
+        $type = "error";
+        $title = __('Bad request', 'payfull');
+        $data = $_POST;
+        
+        array_walk_recursive($data, function(&$item) {
+            $item = sanitize_text_field($item);
+        });
+
+        $tx = isset($data['transaction_id']) ? $data['transaction_id'] : false;
+        $order_id = isset($data['passive_data']) ? $data['passive_data'] : (isset($_GET['order-id']) ? $_GET['order-id'] : null);
+        $order = wc_get_order($order_id);
+
+        $redirect_url = $woocommerce->cart->get_checkout_url();
+        $status = isset($data['status']) ? $data['status'] : null;
+        
+        if(!isset($order)) {
+            $message = __('Order not found.', 'payfull');
+            if($tx) {
+                $message = printf(__('The payment is done but your order not found. Your transaction id is "%1$s"', 'payfull'), $tx);
+            }
+        }
+        // else if($order->status != 'wc-pending' || $order->status=='completed') {
         //     $message = __('Invalid status for the requested order'. ' '.$order_id.'.', 'payfull');
         // }
-        // else {
-        //     if($this->processPaymentResponse($order, $response)) {
-        //         $redirect_url = $order->get_checkout_order_received_url();
-        //         wp_redirect($redirect_url); 
-        //         exit;
-        //     }
-        //     else {
-        //         $order->update_status('wc-failed', '3D Payment failed');
-        //         //$order->add_order_note('3D Payment failed. Response: <pre>'.print_r($response, 1).'</pre>');
-        //         $message = isset($data['ErrorMSG']) ? $data['ErrorMSG'] :  __('Unexpected error occured while processing your request.', 'payfull');
-        //     }
-        // }
-        
-        // if($type=='error') {
-        //     $order->add_order_note('Payment failed. Response:<pre>' . print_r($data, 1).'</pre>');
-        // }
-
-        // wc_add_notice($message, $type);
-        // wp_redirect($redirect_url);        
+        else {
+            if($this->processPaymentResponse($order, $data)) {
+                $message = __('Thank you for shopping with us. Your transaction is succeeded.', 'payfull');
+                wc_add_notice($message);
+                $redirect_url = $order->get_checkout_order_received_url();
+                wp_redirect($redirect_url); 
+                exit;
+            }
+            else {
+                $order->update_status('wc-failed', '3D Payment failed');
+                $message = $this->getErrorMessage($response,__('Unexpected error occured while processing your request.', 'payfull'));
+                $order->add_order_note($message);
+            }
+        }
+        // error happend:
+        wc_add_notice($message, 'error');
+        wp_redirect($redirect_url);
     }
     
     protected function processPaymentResponse($order, $response)
@@ -451,29 +457,30 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         if(isset($response['status']) && $response['status']) {
             $xid = $response['transaction_id'];
             if(empty($xid)) {
-                $order->add_order_note("Invalid response: <pre>".print_r($response,1)."</pre>");
-                wc_add_notice( __('Invalid response receeived from payment gateway', 'payfull'), 'error' );
+                $order->add_order_note("Invalid response: Transaction id is missing.");
                 return false;
             }
             $order->add_order_note("Payment Via Payfull, Transaction ID: {$xid}");
-            $this->saveOrderComission($order, WC()->session->get('installment_fee', 0));
+
+            $this->saveOrderComission($order, WC()->session->get('installment_fee'));
+            unset(WC()->session->installment_fee); // there is no need any more
+
             $order->update_status('wc-processing', "Payment succeeded. Transaction ID: {$xid}");
             //$order->reduce_order_stock();
             $order->payment_complete($xid);
             WC()->cart->empty_cart();
             update_post_meta( $order->id, '_payfull_transaction_id', $xid );
-            
-            $message = __('Thank you for shopping with us. Your transaction is succeeded.', 'payfull');
-            wc_add_notice($message);
-
             return true;
         } else {
-            $error = isset($response['ErrorMSG']) ? $response['ErrorMSG'] : __('Processing payment failed.', 'payfull');
-            //$order->update_status('wc-failed', $error);
-            $order->add_order_note('Payment failed. Response:<pre>' . print_r($response, 1).'</pre>');
-            wc_add_notice( $error, 'error' );
             return false;
         }
+    }
+
+    protected function getErrorMessage($response, $default)
+    {
+        if(isset($response['ErrorMSG']) && strlen($response['ErrorMSG']))
+            return $response['ErrorMSG'];
+        return $default;
     }
 
     /**

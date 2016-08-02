@@ -1,171 +1,248 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2016-01-10 23:30+0200\n"
-"PO-Revision-Date: 2016-01-10 23:30+0200\n"
+"POT-Creation-Date: 2016-08-02 14:23+0300\n"
+"PO-Revision-Date: 2016-08-02 14:23+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.4\n"
+"X-Generator: Poedit 1.8.8\n"
 "X-Poedit-Basepath: ../..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-KeywordsList: __;_e;_x\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: src/WC_Getway_PayFull.php:22
-msgid "PayFull"
+#: src/WC_Gateway_Payfull.php:31
+msgid "Payfull"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:23
-msgid "Process payment via PayFull service."
+#: src/WC_Gateway_Payfull.php:32
+msgid "Process payment via Payfull service."
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:24
-msgid "Proceed to PayFull"
+#: src/WC_Gateway_Payfull.php:33
+msgid "Proceed to Payfull"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:66
-msgid "Enable"
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:68
-msgid "Enable/Disable PayFull checkout."
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:72
-msgid "Title"
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:74
-msgid "Set the title which the user sees during checkout."
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:75
-msgid "PayFull Checkout"
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:78
-msgid "Description"
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:80
-msgid "The message to display during checkout."
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:81
-msgid "Pay with PayFull payment service."
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:84
-msgid "Frame Options"
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:87
-msgid ""
-"JSON string that represents the HTML attributes to use in rendering the "
-"payment form."
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:90
-msgid "API Url"
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:92
-msgid "The api url to PayFul service."
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:96
-msgid "Mode"
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:99
-msgid "Test"
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:99
-msgid "Live"
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:100
-msgid "Set PayFull in \"test\" or \"live\" mode."
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:103
-msgid "Installments"
-msgstr ""
-
-#: src/WC_Getway_PayFull.php:106
+#: src/WC_Gateway_Payfull.php:139
 msgid "Enabled"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:106
-msgid "Disabled"
+#: src/WC_Gateway_Payfull.php:145
+msgid "Title"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:107
-msgid "Enable or Disable payment with installments."
+#: src/WC_Gateway_Payfull.php:147
+msgid "The title which the user will see in the checkout page."
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:110
-msgid "Redirect Button"
+#: src/WC_Gateway_Payfull.php:148
+msgid "Payfull Checkout"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:112
-msgid "Back to Shop"
+#: src/WC_Gateway_Payfull.php:151
+msgid "Description"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:113
-msgid "The text to display in the redirect link after the successful payment"
+#: src/WC_Gateway_Payfull.php:153
+msgid "The message to display during checkout."
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:116
-msgid "Redirect Time"
+#: src/WC_Gateway_Payfull.php:154
+msgid "Pay via Payfull, pay safely with your credit card."
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:119
+#: src/WC_Gateway_Payfull.php:157
+msgid "Endpoint"
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:159
+msgid "The api url to \"Payfull\" service."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:163
+msgid "Api Username"
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:169
+msgid "Api Password"
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:175
+msgid "Enable 3D secure"
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:177 src/WC_Gateway_Payfull.php:183
+msgid "No"
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:177 src/WC_Gateway_Payfull.php:183
+msgid "Yes"
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:178
+msgid "Choose whether to enable 3D secure payament option."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:181
+msgid "Enable Installment"
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:184
+msgid "Choose whether to enable installment option."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:187
+msgid "Total Selector"
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:190
 msgid ""
-"The time to wait before redirecting to shopping page. You can use {timer} to "
-"display a timer in the thanks message."
+"A jQuery selector of the HTML element that contains the total amount in "
+"checkout page."
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:122
-msgid "Thanks Message"
+#: src/WC_Gateway_Payfull.php:193
+msgid "Currency Class"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:124
-msgid ""
-"The order is paid successfully. You will be redirected in {timer} seconds."
+#: src/WC_Gateway_Payfull.php:196
+msgid "The CSS class(es) to be applied to the curreny on checkout page"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:125
-msgid ""
-"The message to display when the payment is finished successfully. You can "
-"use {timer} to display a time remaing for redirecting."
+#: src/WC_Gateway_Payfull.php:199
+msgid "Custom Css"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:150
+#: src/WC_Gateway_Payfull.php:212 src/WC_Gateway_Payfull.php:233
 msgid "Failed to process the payment because of invalid order"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:191 src/WC_Getway_PayFull.php:222
-msgid "Error Code"
+#: src/WC_Gateway_Payfull.php:250
+msgid "Can not refund this order because the transaction id is missing."
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:214 src/WC_Getway_PayFull.php:231
+#: src/WC_Gateway_Payfull.php:356
+msgid "Invalid installment information."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:379
+msgid "Invalid response received."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:390 src/WC_Gateway_Payfull.php:438
+msgid "Thank you for shopping with us. Your transaction is succeeded."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:413
 msgid "Bad request"
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:215
-msgid "Invalid data received from payment service."
+#: src/WC_Gateway_Payfull.php:428
+msgid "Order not found."
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:232
-msgid "Invalid status for the requested order "
+#: src/WC_Gateway_Payfull.php:430
+#, php-format
+msgid ""
+"The payment is done but your order not found. Your transaction id is \"%1$s\""
 msgstr ""
 
-#: src/WC_Getway_PayFull.php:247
-msgid "Payment Succeeded"
+#: src/WC_Gateway_Payfull.php:446
+msgid "Unexpected error occured while processing your request."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:493
+msgid "Holder name cannot be empty."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:496
+msgid "Card number cannot be empty."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:498
+msgid "Please enter a valid credit card number."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:502
+msgid "Card expiration year cannot be empty."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:507
+msgid "The expiration year is invalid"
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:512
+msgid "Card expiration month cannot be empty."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:516
+msgid "The expiration month is invalid: "
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:520
+msgid "Card CVC cannot be empty."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:522
+msgid "Please enter a valid credit card verification number."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:526
+msgid "The installment value must be a positive integer."
+msgstr ""
+
+#: src/WC_Gateway_Payfull.php:538
+msgid "Installment Commission"
+msgstr ""
+
+#: src/views/payment-form.php:24
+msgid "Name on Card"
+msgstr ""
+
+#: src/views/payment-form.php:25
+msgid "Credit Card Number"
+msgstr ""
+
+#: src/views/payment-form.php:26
+msgid "Expiry Momnth"
+msgstr ""
+
+#: src/views/payment-form.php:27
+msgid "Expiry Year"
+msgstr ""
+
+#: src/views/payment-form.php:28
+msgid "Card Verification Number"
+msgstr ""
+
+#: src/views/payment-form.php:29
+msgid "Use 3D secure Payments System"
+msgstr ""
+
+#: src/views/payment-form.php:30
+msgid "installment"
+msgstr ""
+
+#: src/views/payment-form.php:31 src/views/payment-form.php:107
+msgid "Total"
+msgstr ""
+
+#: src/views/payment-form.php:74
+msgid "Month"
+msgstr ""
+
+#: src/views/payment-form.php:85
+msgid "Year"
+msgstr ""
+
+#: src/views/payment-form.php:105
+msgid "Installmet"
+msgstr ""
+
+#: src/views/payment-form.php:106
+msgid "Amount / Month"
 msgstr ""

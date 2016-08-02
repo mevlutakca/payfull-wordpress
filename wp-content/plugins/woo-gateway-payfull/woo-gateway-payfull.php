@@ -22,7 +22,7 @@ function woo_gateway_payfull_init() {
     }
     
     require_once dirname(__FILE__).'/src/WC_Gateway_Payfull.php';
-    $instance = new WC_Gateway_Payfull(false);
+    $instance = new WC_Gateway_Payfull(true);
     $instance->initApiService();
 }
 
@@ -30,6 +30,7 @@ function woo_gateway_payfull_init() {
 function woo_gateway_payfull_add_class( $methods ) {
 	$methods[] = 'WC_Gateway_Payfull';
     if (!class_exists('WC_Gateway_Payfull')) {
+		die("not class_exists('WC_Gateway_Payfull')");
         return [];
     }
 	return $methods;
