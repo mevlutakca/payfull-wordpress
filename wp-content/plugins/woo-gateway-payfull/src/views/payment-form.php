@@ -19,12 +19,12 @@ $IDS = [
     'installment'       => "{$id}-installment",
     'use3d-row'         => "{$id}-use3d-row",
 ];
-    
+
 $LBLS = [
     'holder'        => __( 'Name on Card', 'woocommerce' ),
     'pan'           => __( 'Credit Card Number', 'woocommerce' ),
-    'month'        => __( 'Expiry Momnth', 'woocommerce' ),
-    'year'        => __( 'Expiry Year', 'woocommerce' ),
+    'month'         => __( 'Expiry Momnth', 'woocommerce' ),
+    'year'          => __( 'Expiry Year', 'woocommerce' ),
     'cvc'           => __( 'Card Verification Number', 'woocommerce' ),
     'use3d'         => __( 'Use 3D secure Payments System', 'payfull' ),
     'installment'   => __("installment", "payfull"),
@@ -49,7 +49,7 @@ $VALS = [
     .installment_row {/* padding-top: 10px;*/}
     .install_body_label.installment_radio, .installmet_head .install_head_label.add_space {height: 40px;text-align: center;width: 4%;line-height: 40px;}
     #installment_table_id {background-color: #eee;border: 1px solid;border-radius: 5px;padding: 10px;margin-top: 20px;}
-    
+
     .installmet_head .install_head_label {float: left;font-weight: bold;text-align: center;width: 32%; height: 40px;line-height: 40px;border-bottom: 2px solid #d2d2d2; }
     .installment_body , .installment_footer {  clear: both; }
     .toatl_label {display:  none;}
@@ -96,7 +96,7 @@ $VALS = [
             <label for="<?php echo $IDS['cvc']; ?>"><?php echo $LBLS['cvc']; ?> <span class="required">*</span></label>
             <input id="<?php echo $IDS['cvc']; ?>" value="<?php echo $VALS['cvc']; ?>" class="input-text wc-credit-card-form-card-cvc" type="text" autocomplete="off" placeholder="CVC" name="card[cvc]" />
         </p>
-        
+
         <?php if($enable_installment) : ?>
         <p class="form-row installment">
             <div id="installment_table_id">
@@ -121,7 +121,7 @@ $VALS = [
             <input id="<?php echo $IDS['installment']; ?>" type="hidden" name="installment" value="<?php echo $VALS['installment']; ?>" />
         </p>
         <?php endif; ?>
-        
+
         <?php if($enable_3dSecure) : ?>
         <p class="form-row form-row-wide payfull-3dsecure" id="<?php echo $IDS['use3d-row'] ?>">
             <label for="<?php echo $IDS['use3d']; ?>">
@@ -130,7 +130,7 @@ $VALS = [
             </label>
         </p>
         <?php endif; ?>
-        
+
         <?php //do_action( 'woocommerce_credit_card_form_end', $this->id ); ?>
         <div class="clear"></div>
     </div>
@@ -147,7 +147,7 @@ $VALS = [
             currency: "<?php echo $currency;?>",
             totalSelector: "<?php echo $total_selector;?>",
             currencyClass: "<?php echo $currency_class;?>",
-            
+
             loadBanks: function() {
                 $.ajax({
                     url: "index.php?payfull-api=v1",
@@ -195,7 +195,7 @@ $VALS = [
                 }
                 if (bin == this.bin) { return; }
                 this.bin = bin;
-                
+
                 var url = "index.php?payfull-api=v1";
                 $.ajax({
                     url: url,
@@ -255,20 +255,20 @@ $VALS = [
 
                 var $e = $('#installment_body');
                 $e.empty();
-                var optEl = this.getInstallementOption(1, this.total, 0, this.currency, 1, '', ''); 
+                var optEl = this.getInstallementOption(1, this.total, 0, this.currency, 1, '', '');
                 $e.append(optEl);
-                
+
                 for (var i in this.banks) {
                     var bank = this.banks[i];
                     if (bank.bank == bankName) {
                         var opt, t, fee;
-                        
+
                         for (var j in bank.installments) {
                             opt = bank.installments[j];
-                            
+
                             fee = parseFloat(opt.commission);
                             t = Math.round(this.total * (1+fee)*100)/100;
-                            optEl = this.getInstallementOption(opt.count, this.total, fee, this.currency, bank.has3d, bank.bank, bank.gateway) ; 
+                            optEl = this.getInstallementOption(opt.count, this.total, fee, this.currency, bank.has3d, bank.bank, bank.gateway) ;
                             $e.append(optEl);
                         }
                         break;
