@@ -4,20 +4,21 @@
 wp_enqueue_script( 'wc-credit-card-form' );
 $currency = $currency_symbol;
 $grandTotal = $order->get_total();
+$bankImagesPath = plugins_url( 'images/', __FILE__ );
 
 $IDS = [
-    'bank'              => "{$id}-bank",
-    'gateway'           => "{$id}-gateway",
-    'cardset'           => "{$id}-cardset",
-    'holder'            => "{$id}-card-holder",
-    'pan'               => "{$id}-card-number",
-    'month'            => "{$id}-card-month",
-    'year'            => "{$id}-card-year",
-    'cvc'               => "{$id}-card-cvc",
-    'use3d-label'       => "{$id}-use3d-label",
-    'use3d'             => "{$id}-use3d",
-    'installment'       => "{$id}-installment",
-    'use3d-row'         => "{$id}-use3d-row",
+    'bank'          => "{$id}-bank",
+    'gateway'       => "{$id}-gateway",
+    'cardset'       => "{$id}-cardset",
+    'holder'        => "{$id}-card-holder",
+    'pan'           => "{$id}-card-number",
+    'month'         => "{$id}-card-month",
+    'year'          => "{$id}-card-year",
+    'cvc'           => "{$id}-card-cvc",
+    'use3d-label'   => "{$id}-use3d-label",
+    'use3d'         => "{$id}-use3d",
+    'installment'   => "{$id}-installment",
+    'use3d-row'     => "{$id}-use3d-row",
 ];
 
 $LBLS = [
@@ -32,25 +33,25 @@ $LBLS = [
 ];
 
 $VALS = [
-    'bank'      => isset($form['bank']) ? $form['bank'] : '',
-    'gateway'   => isset($form['gateway']) ? $form['gateway'] : '',
-    'holder'    => isset($form['card']['holder']) ? $form['card']['holder'] : '',
-    'pan'       => isset($form['card']['pan']) ? $form['card']['pan'] : '',
-    'year'    => isset($form['card']['year']) ? $form['card']['year'] : '',
-    'month'    => isset($form['card']['month']) ? $form['card']['month'] : '',
-    'cvc'       => isset($form['card']['cvc']) ? $form['card']['cvc'] : '',
-    'installment'       => isset($form['installment']) ? $form['installment'] : 1,
+    'bank'          => isset($form['bank']) ? $form['bank'] : '',
+    'gateway'       => isset($form['gateway']) ? $form['gateway'] : '',
+    'holder'        => isset($form['card']['holder']) ? $form['card']['holder'] : '',
+    'pan'           => isset($form['card']['pan']) ? $form['card']['pan'] : '',
+    'year'          => isset($form['card']['year']) ? $form['card']['year'] : '',
+    'month'         => isset($form['card']['month']) ? $form['card']['month'] : '',
+    'cvc'           => isset($form['card']['cvc']) ? $form['card']['cvc'] : '',
+    'installment'   => isset($form['installment']) ? $form['installment'] : 1,
 ];
 
 
 ?>
 <style>
-    .install_body_label {float: left;width: 32%;height: 40px;text-align: center; border-bottom: 1px solid #d2d2d2;line-height: 40px;}
+    .install_body_label {float: left;width: 30%;height: 40px;text-align: center; border-bottom: 1px solid #d2d2d2;line-height: 40px;}
     .installment_row {/* padding-top: 10px;*/}
-    .install_body_label.installment_radio, .installmet_head .install_head_label.add_space {height: 40px;text-align: center;width: 4%;line-height: 40px;}
+    .install_body_label.installment_radio, .installmet_head .install_head_label.add_space {height: 40px;text-align: center;width: 10%;line-height: 40px;}
     #installment_table_id {background-color: #eee;border: 1px solid;border-radius: 5px;padding: 10px;margin-top: 20px;}
 
-    .installmet_head .install_head_label {float: left;font-weight: bold;text-align: center;width: 32%; height: 40px;line-height: 40px;border-bottom: 2px solid #d2d2d2; }
+    .installmet_head .install_head_label {float: left;font-weight: bold;text-align: center;width: 30%; height: 40px;line-height: 40px;border-bottom: 2px solid #d2d2d2; }
     .installment_body , .installment_footer {  clear: both; }
     .toatl_label {display:  none;}
 </style>
@@ -64,7 +65,7 @@ $VALS = [
 
         <p class="form-row form-row-wide">
             <label for="<?php echo $IDS['pan']; ?>"><?php echo $LBLS['pan']; ?> <span class="required">*</span></label>
-            <input id="<?php echo $IDS['pan']; ?>" value="<?php echo $VALS['pan']; ?>" class="input-text wc-credit-card-form-card-number input-cc-number-not-supported" type="text" maxlength="20" autocomplete="off" placeholder="•••• •••• •••• ••••" name="card[pan]" />
+            <input value="4355084355084358" id="<?php echo $IDS['pan']; ?>" data-value="<?php echo $VALS['pan']; ?>" class="input-text wc-credit-card-form-card-number input-cc-number-not-supported" type="text" maxlength="20" autocomplete="off" placeholder="•••• •••• •••• ••••" name="card[pan]" />
         </p>
 
         <div class="form-row form-row-wide">
@@ -101,7 +102,7 @@ $VALS = [
         <p class="form-row installment">
             <div id="installment_table_id">
                 <div class="installmet_head">
-                    <div class="install_head_label add_space"></div>
+                    <div class="install_head_label add_space"><img style="display: none" class="bank_photo" data-src="<?php echo $bankImagesPath; ?>" src=""></div>
                     <div class="install_head_label"><?php echo __('Installmet', 'payfull') ?></div>
                     <div class="install_head_label"><?php echo __('Amount / Month', 'payfull') ?></div>
                     <div class="install_head_label"><?php echo __('Total', 'payfull') ?></div>
@@ -188,6 +189,7 @@ $VALS = [
             },
 
             onCardChanged: function (element) {
+                var $bank_photo = $('.bank_photo');
                 this.detectCardBrand($(element));
                 var bin = $(element).val().replace(/\s/g, '').substr(0, 6);
                 if (bin.length < 6) {
@@ -204,8 +206,20 @@ $VALS = [
                     dataType: "json",
                     success: function (response) {
                         var bank = response.data.bank_id;
-                        if (bank && bank.length) {
-                            payfull.refreshTakistPlans(bank);
+                        if (bank) {
+                            payfull.refreshTakistPlans(bank, response.data.type);
+                        }
+
+                        if(bank && bank.length){
+                            if(response.data.type == 'CREDIT'){
+                                $bank_photo.attr('src', $bank_photo.attr('data-src')+'networks/'+bank+'.png');
+                            }else{
+                                $bank_photo.attr('src', $bank_photo.attr('data-src')+'banks/'+bank+'.png');
+                            }
+
+                            $bank_photo.show();
+                        }else{
+                            $bank_photo.hide();
                         }
                     }
                 });
@@ -250,7 +264,7 @@ $VALS = [
                 ;
             },
 
-            refreshTakistPlans: function (bankName) {
+            refreshTakistPlans: function (bankName, cardType) {
                 this.payOneShot();
 
                 var $e = $('#installment_body');
@@ -258,6 +272,9 @@ $VALS = [
                 var optEl = this.getInstallementOption(1, this.total, 0, this.currency, 1, '', '');
                 $e.append(optEl);
 
+                if(cardType != 'CREDIT'){
+                    return;
+                }
                 for (var i in this.banks) {
                     var bank = this.banks[i];
                     if (bank.bank == bankName) {
