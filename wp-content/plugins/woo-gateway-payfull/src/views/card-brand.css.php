@@ -1,7 +1,7 @@
 <?php
 $visa_img_path = plugins_url( 'images/visa.png', __FILE__ );
 $master_img_path = plugins_url( 'images/master.png', __FILE__ );
-$not_supported_img_path = plugins_url( 'images/unknown.png', __FILE__ );
+$not_supported_img_path = plugins_url( 'images/payfull_creditcard_not_supported.png', __FILE__ );
 
 ?>
 <style type="text/css">
