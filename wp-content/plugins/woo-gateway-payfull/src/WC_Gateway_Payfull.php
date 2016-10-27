@@ -516,6 +516,10 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
                 $errors[] = __('The expiration month is invalid: '.var_export($form['card']['month'], 1), 'payfull');
             }
         }
+        if(!$this->checkCCEXPDate($form['card']['month'], $form['card']['year'])){
+            $errors[] = __('The expiration month is invalid: '.var_export($form['card']['month'], 1), 'payfull');
+        }
+
         if(!isset($form['card']['cvc']) || empty($form['card']['cvc'])) {
             $errors[] = __('Card CVC cannot be empty.', 'payfull');
         }elseif(isset($form['card']['pan']) AND !$this->checkCCCVC($form['card']['pan'], $form['card']['cvc'])){
@@ -538,6 +542,13 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         $fee->name = __('Installment Commission', 'payfull');
         $order->add_fee($fee);
         $order->calculate_totals();
+    }
+
+    protected function checkCCEXPDate($month, $year){
+        if(strtotime('01-'.$month.'-'.$year) <= time()){
+            return false;
+        }
+        return true;
     }
 
     protected function checkCCNumber($cardNumber){

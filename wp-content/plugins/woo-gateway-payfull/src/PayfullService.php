@@ -128,6 +128,11 @@ class PayfullService {
         $curl = curl_init($url);
         curl_setopt_array($curl, $options);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+
+        //ssl
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        
         $content  = curl_exec($curl);
         $error = curl_error($curl);
         curl_close($curl);

@@ -74,6 +74,7 @@ $VALS = [
                 <select id="<?php echo $IDS['month']; ?>" name="card[month]" class="input-text wc-credit-card-form-card-month">
                     <option value=""><?php echo __('Month', 'payfull'); ?></option>
                     <?php for($i=1;$i<=12;$i++) : ?>
+                        <?php $i = (strlen($i) == 2)?$i:'0'.$i; ?>
                         <?php $selected = $i==$VALS['month'] ? 'selected' : ''; ?>
                         <option value="<?php echo $i;?>" <?php echo $selected; ?> ><?php echo $i;?></option>
                     <?php endfor; ?>
@@ -148,6 +149,7 @@ $VALS = [
             currency: "<?php echo $currency;?>",
             totalSelector: "<?php echo $total_selector;?>",
             currencyClass: "<?php echo $currency_class;?>",
+
 
             loadBanks: function() {
                 $.ajax({
