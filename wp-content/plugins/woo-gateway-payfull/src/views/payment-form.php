@@ -184,6 +184,7 @@ $VALS = [
             },
 
             updateGrandTotal: function(total, currency) {
+                total = Math.round(total * 100) / 100;
                 $(this.totalSelector).html('<span clas="'+this.currencyClass+'">'+currency+'</span>&nbsp;'+total);
             },
 
@@ -208,6 +209,7 @@ $VALS = [
 
             onCardChanged: function (element) {
                 var $bank_photo = $('.bank_photo');
+                payfull.getExtraInstallments(1, 1, '', '');
                 this.detectCardBrand($(element));
                 var bin = $(element).val().replace(/\s/g, '').substr(0, 6);
                 if (bin.length < 6) {
@@ -277,7 +279,7 @@ $VALS = [
                 var checked = count==1 ? 'checked' : '';
 
                 if(count == '<?php echo $VALS['installment']?>'){
-                    payfull.getExtraInstallments(total, count, bank, gateway);
+                    if(gateway != '') payfull.getExtraInstallments(total, count, bank, gateway);
                     checked = 'checked';
                     payfull.updateGrandTotal(total, payfull.currency);
                 }
