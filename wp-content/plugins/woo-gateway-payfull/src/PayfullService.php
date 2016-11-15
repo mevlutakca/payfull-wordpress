@@ -37,15 +37,46 @@ class PayfullService {
     
     public function banks()
     {
-        return $this->send('Get', [
+        $installments = $this->send('Get', [
             'get_param' => 'Installments',
+        ]);
+
+        $installments['oneShotCommission'] = $this->oneShotCommission();
+        return $installments;
+    }
+
+    public function oneShotCommission()
+    {
+        $oneShotCommission = $this->send('Get', [
+            'get_param'            => 'Installments',
+            "one_shot_commission"  => 1
+        ]);
+
+        if(isset($oneShotCommission['data']['commission'])){
+            $oneShotCommission = str_replace('%', '', $oneShotCommission['data']['commission']);
+        }else{
+            $oneShotCommission = 0;
+        }
+
+        return $oneShotCommission;
+    }
+
+    public function extraInstallments($data)
+    {
+        return $this->send('Get', [
+            'get_param'       => 'ExtraInstallments',
+            "total"           => $data['total'],
+            "currency"        => $data['currency'],
+            "installments"    => $data['count'],
+            "bank_id"         => $data['bank'],
+            "gateway"         => $data['gateway'],
         ]);
     }
 
     public function getCommission($amount, $bankId, $installmentCount)
     {
         if($installmentCount===1) {
-            return 0;
+            return $this->oneShotCommission();
         }
 
         $bankId = strtolower($bankId);
@@ -145,4 +176,6 @@ class PayfullService {
 
         return $content;
     }
+
+
 }

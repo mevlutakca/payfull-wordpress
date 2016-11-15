@@ -16,6 +16,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
     public $endpoint = null;
     public $enable_3dSecure = 1;
     public $enable_installment = 1;
+    public $enable_extra_installment = 0;
     public $currency_class;
     public $total_selector;
     /**
@@ -51,6 +52,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         $this->total_selector = $this->get_option('total_selector');
         $this->enable_3dSecure = $this->get_option('enable_3dSecure');
         $this->enable_installment = $this->get_option('enable_installment');
+        $this->enable_extra_installment = $this->get_option('enable_extra_installment');
 
         if($register_hooks) {
             //$this->initApiService();
@@ -115,6 +117,9 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
                 break;
             case 'banks':
                 $result = $this->payfull()->banks();
+                break;
+            case 'extra_ins':
+                $result = $this->payfull()->extraInstallments($data);
                 break;
             default:
                 $result = ['error' => true, 'message'=>'Unsupported command'];
@@ -182,6 +187,12 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
                 'type' => 'select',
                 'options'     => array(__( 'No', 'payfull' ),__( 'Yes', 'payfull' )),
                 'description' => __('Choose whether to enable installment option.', 'payfull'),
+            ),
+            'enable_extra_installment' => array(
+                'title' => __('Enable Extra Installment', 'payfull'),
+                'type' => 'select',
+                'options'     => array(__( 'No', 'payfull' ),__( 'Yes', 'payfull' )),
+                'description' => __('Choose whether to enable extra installment option.', 'payfull'),
             ),
             'total_selector' => array(
                 'title' => __('Total Selector', 'payfull'),
@@ -303,14 +314,15 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             'custom_css' => $this->get_option('custom_css'),
             'enable_3dSecure' => intval($this->enable_3dSecure) === 1,
             'enable_installment' => intval($this->enable_installment)===1,
+            'enable_extra_installment' => intval($this->enable_extra_installment)===1,
         ]);
         do_action( 'woocommerce_credit_card_form_end', $this->id );
     }
     
     protected function sendPayment($order, $data)
     {
-        $use3d = 0;
-        $installments = 1;
+        $use3d          = 0;
+        $installments   = 1;
         $card = isset($data['card']) ? $data['card'] : null;
         
         if($this->enable_3dSecure && isset($data['use3d'])) {
@@ -330,39 +342,35 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
 
         
         $request = [
-            'total' => $order->get_total(),
-            'currency' => $order->get_order_currency(),
-            'installments' => $installments,
-            'passive_data' => $order->id,//json_encode(['order-id' => $order->id]),
-            'cc_name' => $card['holder'],
-            'cc_number' => str_replace(' ', '', $card['pan']),
-            'cc_month' => $card['month'],
-            'cc_year' => $card['year'],
-            'cc_cvc' => $card['cvc'],
-            'customer_firstname' => $fname,
-            'customer_lastname' => $lname,
-            'customer_email' => $order->billing_email,
-            'customer_phone' => $order->billing_phone,
-            'payment_title' => "{$fname} {$lname} | order $order->id | ".$order->get_total().$order->get_order_currency(),
+            'total'                 => $order->get_total(),
+            'currency'              => $order->get_order_currency(),
+            'installments'          => $installments,
+            'passive_data'          => $order->id,//json_encode(['order-id' => $order->id]),
+            'cc_name'               => $card['holder'],
+            'cc_number'             => str_replace(' ', '', $card['pan']),
+            'cc_month'              => $card['month'],
+            'cc_year'               => $card['year'],
+            'cc_cvc'                => $card['cvc'],
+            'customer_firstname'    => $fname,
+            'customer_lastname'     => $lname,
+            'customer_email'        => $order->billing_email,
+            'customer_phone'        => $order->billing_phone,
+            'payment_title'         => "{$fname} {$lname} | order $order->id | ".$order->get_total().$order->get_order_currency(),
         ];
 
-        $fee = 10;
-        if($installments > 1) {
-            $installments = 5;
-            $bank_id = isset($data['bank']) ? $data['bank'] : null;
-            $gateway = isset($data['gateway']) ? $data['gateway'] : null;
+        $bank_id = isset($data['bank']) ? $data['bank'] : null;
+        $gateway = isset($data['gateway']) ? $data['gateway'] : null;
 
-            if(!isset($gateway, $bank_id)) {
-                wc_add_notice( __('Invalid installment information.', 'payfull'), 'error' );
-                return;
-            }
-            
-            $fee = $this->payfull()->getCommission($total, $bank_id, $installments);
-            WC()->session->set( 'installment_fee', $fee );
-
-            $request['bank_id'] = $bank_id;
-            $request['gateway'] = $gateway;
+        if(!isset($gateway, $bank_id)) {
+            wc_add_notice( __('Invalid installment information.', 'payfull'), 'error' );
+            return;
         }
+
+        $fee = $this->payfull()->getCommission($total, $bank_id, $installments);
+        WC()->session->set( 'installment_fee', $fee );
+
+        if($bank_id != '') $request['bank_id'] = $bank_id;
+        if($gateway != '') $request['gateway'] = $gateway;
 
         if($use3d) {
             $checkout_url = $order->get_checkout_payment_url(true);

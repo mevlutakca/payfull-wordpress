@@ -2,8 +2,10 @@
 
 /* @vat $this the instnce of WC_Gateway_Payfull */
 wp_enqueue_script( 'wc-credit-card-form' );
-$currency = $currency_symbol;
-$grandTotal = $order->get_total();
+$currency       = $currency_symbol;
+$grandTotal     = $order->get_total();
+$currencyAsText = $order->get_order_currency();
+
 $bankImagesPath = plugins_url( 'images/', __FILE__ );
 
 $IDS = [
@@ -124,6 +126,16 @@ $VALS = [
         </p>
         <?php endif; ?>
 
+        <?php if($enable_extra_installment) : ?>
+        <div class="form-row form-row-wide extra_installments_container" style="display: none">
+            <p class="form-row form-row-first" >
+                <label><?php echo __('Extra Installmets', 'payfull') ?></label>
+            </p>
+            <div class="clear"></div>
+            <div class="extra_installments_select form-row-first"></div>
+        </div>
+        <?php endif; ?>
+
         <?php if($enable_3dSecure) : ?>
         <p class="form-row form-row-wide payfull-3dsecure" id="<?php echo $IDS['use3d-row'] ?>">
             <label for="<?php echo $IDS['use3d']; ?>">
@@ -149,6 +161,7 @@ $VALS = [
             currency: "<?php echo $currency;?>",
             totalSelector: "<?php echo $total_selector;?>",
             currencyClass: "<?php echo $currency_class;?>",
+            oneShotCommission: 0,
 
 
             loadBanks: function() {
@@ -159,9 +172,10 @@ $VALS = [
                     dataType: "json",
                     success: function (response) {
                         payfull.banks = response.data;
+                        payfull.oneShotCommission = response.oneShotCommission;
 
                         <?php if(!empty($VALS['bank'])) : ?>
-                        payfull.refreshTakistPlans("<?php echo $VALS['bank']; ?>")
+                        payfull.refreshInstallmentPlans("<?php echo $VALS['bank']; ?>");
                         <?php endif; ?>
                     }
                 });
@@ -195,6 +209,9 @@ $VALS = [
                 this.detectCardBrand($(element));
                 var bin = $(element).val().replace(/\s/g, '').substr(0, 6);
                 if (bin.length < 6) {
+                    payfull.refreshInstallmentPlans('', '');
+                    $bank_photo.hide();
+                    this.bin = bin;
                     return;
                 }
                 if (bin == this.bin) { return; }
@@ -209,7 +226,9 @@ $VALS = [
                     success: function (response) {
                         var bank = response.data.bank_id;
                         if (bank) {
-                            payfull.refreshTakistPlans(bank, response.data.type);
+                            payfull.refreshInstallmentPlans(bank, response.data.type);
+                        }else{
+                            payfull.refreshInstallmentPlans('', response.data.type);
                         }
 
                         if(bank && bank.length){
@@ -237,7 +256,7 @@ $VALS = [
                 <?php endif ?>
             },
 
-            payWithTaksit: function (count, bank, gateway) {
+            payWithInstallment: function (count, bank, gateway) {
                 $('#<?php echo $IDS['installment'] ?>').val(count);
                 $('#<?php echo $IDS['bank'] ?>').val(bank);
                 $('#<?php echo $IDS['gateway'] ?>').val(gateway);
@@ -245,10 +264,10 @@ $VALS = [
 
             payOneShot: function () {
                 this.show3D(true);
-                this.payWithTaksit(1, '', '');
+                this.payWithInstallment(1, '', '');
             },
 
-            getInstallementOption: function(count, amount, percentage, currency, has3d, bank, gateway) {
+            getInstallmentOption: function(count, amount, percentage, currency, has3d, bank, gateway) {
                 var commession = percentage;//percentage.replace('%', '');
                 var fee = amount * parseFloat(commession) / 100;
                 var total = amount * (1 + parseFloat(commession) / 100);
@@ -266,12 +285,12 @@ $VALS = [
                 ;
             },
 
-            refreshTakistPlans: function (bankName, cardType) {
+            refreshInstallmentPlans: function (bankName, cardType) {
                 this.payOneShot();
 
                 var $e = $('#installment_body');
                 $e.empty();
-                var optEl = this.getInstallementOption(1, this.total, 0, this.currency, 1, '', '');
+                var optEl = this.getInstallmentOption(1, this.total, payfull.oneShotCommission, this.currency, 1, '', '');
                 $e.append(optEl);
 
                 if(cardType != 'CREDIT'){
@@ -284,10 +303,11 @@ $VALS = [
 
                         for (var j in bank.installments) {
                             opt = bank.installments[j];
+                            if(opt.count < 2) continue;
 
                             fee = parseFloat(opt.commission);
                             t = Math.round(this.total * (1+fee)*100)/100;
-                            optEl = this.getInstallementOption(opt.count, this.total, fee, this.currency, bank.has3d, bank.bank, bank.gateway) ;
+                            optEl = this.getInstallmentOption(opt.count, this.total, fee, this.currency, bank.has3d, bank.bank, bank.gateway) ;
                             $e.append(optEl);
                         }
                         break;
@@ -295,7 +315,40 @@ $VALS = [
                 }
             },
 
+            getExtraInstallments: function (total, count, bank, gateway) {
+                var divSelectorExtraInst  = $('.extra_installments_container');
+                var containerSelectorInst = $('.extra_installments_select');
+
+                var url = "index.php?payfull-api=v1";
+                $.ajax({
+                    url: url,
+                    method: "POST",
+                    data: { command:"extra_ins", total: total, currency:'<?php echo $currencyAsText; ?>', count:count, bank:bank, gateway:gateway},
+                    dataType: "json",
+                    success: function (response) {
+                        var campaigns = response.data.campaigns;
+                        if(campaigns){
+                            var selectExtraInstallments = "<select name='campaign_id' class='form-control'>";
+                            selectExtraInstallments = selectExtraInstallments+'<option value=""><?php echo __('- Select -');?></option>';
+                            $.each(campaigns, function( index, value ) {
+
+                                var option = '<option value="'+value.campaign_id+'">+ '+value.extra_installments+'</option>';
+                                selectExtraInstallments = selectExtraInstallments+option;
+                            });
+                            selectExtraInstallments = selectExtraInstallments+'</select>';
+                            containerSelectorInst.html(selectExtraInstallments);
+                            divSelectorExtraInst.css('display', 'block');
+                        }else{
+                            containerSelectorInst.html('');
+                            divSelectorExtraInst.css('display', 'none');
+                        }
+
+                    }
+                });
+            },
+
             run: function () {
+
                 this.loadBanks();
                 this.detectCardBrand($('#<?php echo $IDS['pan'] ?>'));
 
@@ -309,10 +362,11 @@ $VALS = [
                     var total = $el.data('total');
 
                     payfull.updateGrandTotal(total, payfull.currency);
+                    payfull.getExtraInstallments(total, count, $el.data('bank'), $el.data('gateway'));
 
                     if(count!=1) {
                         payfull.show3D($el.data('has3d'));
-                        payfull.payWithTaksit(count, $el.data('bank'), $el.data('gateway'));
+                        payfull.payWithInstallment(count, $el.data('bank'), $el.data('gateway'));
                     } else {
                         payfull.payOneShot();
                     }
@@ -326,12 +380,119 @@ $VALS = [
 
     })(jQuery);
 </script>
+<?php else: ?>
+    <script type="text/javascript">
+        (function ($) {
+            window.payfull = {
+                bin: false,
+                banks: [],
+                total: parseFloat('<?php echo $grandTotal;?>'),
+                currency: "<?php echo $currency;?>",
+                totalSelector: "<?php echo $total_selector;?>",
+                currencyClass: "<?php echo $currency_class;?>",
+
+                detectCardBrand: function($el) {
+                    var number = $el.val();
+                    $el.removeClass('input-cc-number-not-supported');
+                    var re_visa = new RegExp("^4");
+                    var re_master = new RegExp("^5[1-5]");
+
+                    if (number.match(re_visa) != null){
+                        $el.addClass('input-cc-number-visa');
+                        $el.removeClass('input-cc-number-master');
+                    } else if (number.match(re_master) != null){
+                        $el.removeClass('input-cc-number-visa');
+                        $el.addClass('input-cc-number-master');
+                    } else{
+                        $el.removeClass('input-cc-number-visa');
+                        $el.removeClass('input-cc-number-master');
+                        $el.addClass('input-cc-number-not-supported');
+                    }
+                },
+
+                onCardChanged: function (element) {
+                    var $bank_photo = $('.bank_photo');
+                    this.detectCardBrand($(element));
+                    var bin = $(element).val().replace(/\s/g, '').substr(0, 6);
+                    if (bin.length < 6) {
+                        return;
+                    }
+                    if (bin == this.bin) { return; }
+                    this.bin = bin;
+
+                    var url = "index.php?payfull-api=v1";
+                    $.ajax({
+                        url: url,
+                        method: "POST",
+                        data: { command:"bin", bin: bin },
+                        dataType: "json",
+                        success: function (response) {
+                            var bank = response.data.bank_id;
+                            if (bank) {
+                                payfull.refreshInstallmentPlans(bank, response.data.type);
+                            }
+
+                            if(bank && bank.length){
+                                if(response.data.type == 'CREDIT'){
+                                    $bank_photo.attr('src', $bank_photo.attr('data-src')+'networks/'+bank+'.png');
+                                }else{
+                                    $bank_photo.attr('src', $bank_photo.attr('data-src')+'banks/'+bank+'.png');
+                                }
+
+                                $bank_photo.show();
+                            }else{
+                                $bank_photo.hide();
+                            }
+                        }
+                    });
+                },
+
+                show3D: function (val) {
+                    <?php if($enable_3dSecure) : ?>
+                    val ? $('#<?php echo $IDS['use3d-row']; ?>').show() : $('#<?php echo $IDS['use3d-row'] ?>').hide();
+                    if (!val) {
+                        $('#<?php echo $IDS['use3d-row'] ?> input[type="checkbox"]').prop("checked", false);
+                        $('#<?php echo $IDS['use3d-row'] ?> label').removeClass("checked");
+                    }
+                    <?php endif ?>
+                },
+
+                payOneShot: function () {
+                    this.show3D(true);
+                    this.payWithInstallment(1, '', '');
+                },
+
+                run: function () {
+                    this.detectCardBrand($('#<?php echo $IDS['pan'] ?>'));
+
+                    $('#<?php echo $IDS['pan'] ?>').keyup(function () {
+                        payfull.onCardChanged(this);
+                    });
+
+                    $('body').on("change", '.custom_field_installment_radio', function () {
+                        var $el = $(this);
+                        var count = $el.attr('rel');
+                        var total = $el.data('total');
+
+                        payfull.updateGrandTotal(total, payfull.currency);
+                        payfull.payOneShot();
+
+                    });
+
+                    if (this.init) {
+                        this.init();
+                    }
+                }
+            };
+
+        })(jQuery);
+    </script>
+<?php endif; ?>
 
 <script type="text/javascript">
     (function ($) {
         payfull.run();
     })(jQuery);
 </script>
-<?php endif; ?>
 
 <?php $this->renderView(__DIR__."/card-brand.css.php");?>
