@@ -42,7 +42,9 @@ $VALS = [
     'year'          => isset($form['card']['year']) ? $form['card']['year'] : '',
     'month'         => isset($form['card']['month']) ? $form['card']['month'] : '',
     'cvc'           => isset($form['card']['cvc']) ? $form['card']['cvc'] : '',
-    'installment'   => isset($form['installment']) ? $form['installment'] : 1,
+    'installment'   => isset($form["payment"]['installment']) ? $form["payment"]['installment'] : 1,
+    'use3d'         => isset($form['use3d'])AND$form['use3d'] ? $form['use3d'] : 0,
+    'campaign_id'   => isset($form['campaign_id'])AND$form['campaign_id'] ? $form['campaign_id'] : 0,
 ];
 
 
@@ -67,7 +69,7 @@ $VALS = [
 
         <p class="form-row form-row-wide">
             <label for="<?php echo $IDS['pan']; ?>"><?php echo $LBLS['pan']; ?> <span class="required">*</span></label>
-            <input value="" id="<?php echo $IDS['pan']; ?>" data-value="<?php echo $VALS['pan']; ?>" class="input-text wc-credit-card-form-card-number input-cc-number-not-supported" type="text" maxlength="20" autocomplete="off" placeholder="•••• •••• •••• ••••" name="card[pan]" />
+            <input value="<?php echo $VALS['pan']; ?>" id="<?php echo $IDS['pan']; ?>" data-value="<?php echo $VALS['pan']; ?>" class="input-text wc-credit-card-form-card-number input-cc-number-not-supported" type="text" maxlength="20" autocomplete="off" placeholder="•••• •••• •••• ••••" name="card[pan]" />
         </p>
 
         <div class="form-row form-row-wide">
@@ -139,7 +141,7 @@ $VALS = [
         <?php if($enable_3dSecure) : ?>
         <p class="form-row form-row-wide payfull-3dsecure" id="<?php echo $IDS['use3d-row'] ?>">
             <label for="<?php echo $IDS['use3d']; ?>">
-                <input id="<?php echo $IDS['use3d']; ?>" class="input-checkbox payfull-options-use3d" type="checkbox" name="use3d" value="true" />
+                <input <?php if(isset($VALS['use3d'])AND$VALS['use3d']) echo 'checked'; ?> id="<?php echo $IDS['use3d']; ?>" class="input-checkbox payfull-options-use3d" type="checkbox" name="use3d" value="true" />
                 <?php echo $LBLS['use3d']; ?>
             </label>
         </p>
@@ -273,6 +275,14 @@ $VALS = [
                 var total = amount * (1 + parseFloat(commession) / 100);
                 var pmon = total / count;
                 var checked = count==1 ? 'checked' : '';
+
+                if(count == '<?php echo $VALS['installment']?>'){
+                    payfull.getExtraInstallments(total, count, bank, gateway);
+                    checked = 'checked';
+                    payfull.updateGrandTotal(total, payfull.currency);
+                }
+
+
                 return ''
                     + '<div class="installment_row">'
                     + '<div class="install_body_label installment_radio">'
@@ -331,8 +341,8 @@ $VALS = [
                             var selectExtraInstallments = "<select name='campaign_id' class='form-control'>";
                             selectExtraInstallments = selectExtraInstallments+'<option value=""><?php echo __('- Select -');?></option>';
                             $.each(campaigns, function( index, value ) {
-
-                                var option = '<option value="'+value.campaign_id+'">+ '+value.extra_installments+'</option>';
+                                var selected = '<?php echo $VALS['campaign_id']; ?>' == value.campaign_id ? 'selected' : '';
+                                var option   = '<option '+selected+' value="'+value.campaign_id+'">+ '+value.extra_installments+'</option>';
                                 selectExtraInstallments = selectExtraInstallments+option;
                             });
                             selectExtraInstallments = selectExtraInstallments+'</select>';
@@ -351,6 +361,7 @@ $VALS = [
 
                 this.loadBanks();
                 this.detectCardBrand($('#<?php echo $IDS['pan'] ?>'));
+                payfull.onCardChanged($('#<?php echo $IDS['pan'] ?>'));
 
                 $('#<?php echo $IDS['pan'] ?>').keyup(function () {
                     payfull.onCardChanged(this);

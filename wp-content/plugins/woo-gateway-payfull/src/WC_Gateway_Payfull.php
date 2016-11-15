@@ -415,24 +415,20 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         if(!defined('WOOCOMMERCE_VERSION')) {
             throw new \Exception('WooCommerce is not running.');
         }
-
         
-        
-        
-        $type = "error";
-        $title = __('Bad request', 'payfull');
-        $data = $_POST;
+        $type       = "error";
+        $title      = __('Bad request', 'payfull');
+        $data       = $_POST;
         
         array_walk_recursive($data, function(&$item) {
-            $item = sanitize_text_field($item);
+            $item  = sanitize_text_field($item);
         });
 
-        $tx = isset($data['transaction_id']) ? $data['transaction_id'] : false;
-        $order_id = isset($data['passive_data']) ? $data['passive_data'] : (isset($_GET['order-id']) ? $_GET['order-id'] : null);
-        $order = wc_get_order($order_id);
-
-        $redirect_url = $woocommerce->cart->get_checkout_url();
-        $status = isset($data['status']) ? $data['status'] : null;
+        $tx             = isset($data['transaction_id']) ? $data['transaction_id'] : false;
+        $order_id       = isset($data['passive_data']) ? $data['passive_data'] : (isset($_GET['order-id']) ? $_GET['order-id'] : null);
+        $order          = wc_get_order($order_id);
+        $hash           = $this->generateHash($data);
+        $redirect_url   = $woocommerce->cart->get_checkout_url();
         
         if(!isset($order)) {
             $message = __('Order not found.', 'payfull');
@@ -443,6 +439,9 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         // else if($order->status != 'wc-pending' || $order->status=='completed') {
         //     $message = __('Invalid status for the requested order'. ' '.$order_id.'.', 'payfull');
         // }
+        else if($hash != $data['hash']) {
+             $message = __('Invalid hash code', 'payfull').' '.$order_id;
+        }
         else {
             if($this->processPaymentResponse($order, $data)) {
                 $message = __('Thank you for shopping with us. Your transaction is succeeded.', 'payfull');
@@ -453,15 +452,28 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             }
             else {
                 $order->update_status('wc-failed', '3D Payment failed');
-                $message = $this->getErrorMessage($response,__('Unexpected error occured while processing your request.', 'payfull'));
+                $message = $this->getErrorMessage($data,__('Unexpected error occurred while processing your request.', 'payfull'));
                 $order->add_order_note($message);
             }
         }
-        // error happend:
+        // error happened:
         wc_add_notice($message, 'error');
         wp_redirect($redirect_url);
     }
-    
+
+    protected function generateHash($params){
+        $arr = [];
+        unset($params['hash']);
+        foreach($params as $param_key=>$param_val){$arr[strtolower($param_key)]=$param_val;}
+        ksort($arr);
+        $hashString_char_count = "";
+        foreach ($arr as $key=>$val) {
+            $hashString_char_count .= mb_strlen($val) . $val;
+        }
+        $hashString_char_count      = strtolower(hash_hmac("sha1", $hashString_char_count, $this->password));
+        return $hashString_char_count;
+    }
+
     protected function processPaymentResponse($order, $response)
     {
         if(isset($response['status']) && $response['status']) {
@@ -477,7 +489,6 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
 
             $this->saveOrderCommission($order, WC()->session->get('installment_fee'), $installments, $extraInstallments);
             unset(WC()->session->installment_fee); // there is no need any more
-            unset(WC()->session->installment_count); // there is no need any more
 
             $order->update_status('wc-processing', "Payment succeeded. Transaction ID: {$xid}");
             //$order->reduce_order_stock();
