@@ -368,7 +368,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         }
 
         $fee = $this->payfull()->getCommission($total, $bank_id, $installments);
-        WC()->session->set( 'installment_fee', $fee );
+        WC()->session->set( 'installment_fee',    $fee );
 
         if($bank_id != '')              $request['bank_id']     = $bank_id;
         if($gateway != '')              $request['gateway']     = $gateway;
@@ -472,8 +472,12 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             }
             $order->add_order_note("Payment Via Payfull, Transaction ID: {$xid}");
 
-            $this->saveOrderComission($order, WC()->session->get('installment_fee'));
+            $installments      = isset($response['installments'])?$response['installments']:1;
+            $extraInstallments = isset($response['extra_installments'])?$response['extra_installments']:'';
+
+            $this->saveOrderCommission($order, WC()->session->get('installment_fee'), $installments, $extraInstallments);
             unset(WC()->session->installment_fee); // there is no need any more
+            unset(WC()->session->installment_count); // there is no need any more
 
             $order->update_status('wc-processing', "Payment succeeded. Transaction ID: {$xid}");
             //$order->reduce_order_stock();
@@ -543,13 +547,21 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         return count($errors) ? $errors : true;
     }
 
-    protected function saveOrderComission($order, $amount)
+    protected function saveOrderCommission($order, $amount, $installments, $extraInstallments)
     {
-        $fee = new stdClass();
-        $fee->tax = 0;
-        $fee->amount = $amount;
-        $fee->taxable = false;
-        $fee->name = __('Installment Commission', 'payfull');
+        if($extraInstallments != '' AND $extraInstallments != 0){
+            $installments .= ' +'.$extraInstallments;
+            $installments  = __('Installment Commission'.' ('.$installments.')', 'payfull');
+        }
+        if($installments == 1){
+            $installments  = __('Commission', 'payfull');
+        }
+
+        $fee            = new stdClass();
+        $fee->tax       = 0;
+        $fee->amount    = $amount;
+        $fee->taxable   = false;
+        $fee->name      = $installments;
         $order->add_fee($fee);
         $order->calculate_totals();
     }
