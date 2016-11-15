@@ -321,10 +321,11 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
     
     protected function sendPayment($order, $data)
     {
-        $use3d          = 0;
-        $installments   = 1;
-        $card = isset($data['card']) ? $data['card'] : null;
-        
+        $use3d               = 0;
+        $installments        = 1;
+        $card                = isset($data['card']) ? $data['card'] : null;
+        $extraInsCampaignId  = isset($data['campaign_id']) ? $data['campaign_id'] : null;
+
         if($this->enable_3dSecure && isset($data['use3d'])) {
             $use3d = ($data['use3d']=="true");
         }
@@ -369,8 +370,9 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         $fee = $this->payfull()->getCommission($total, $bank_id, $installments);
         WC()->session->set( 'installment_fee', $fee );
 
-        if($bank_id != '') $request['bank_id'] = $bank_id;
-        if($gateway != '') $request['gateway'] = $gateway;
+        if($bank_id != '')              $request['bank_id']     = $bank_id;
+        if($gateway != '')              $request['gateway']     = $gateway;
+        if(isset($extraInsCampaignId))  $request['campaign_id'] = $extraInsCampaignId;
 
         if($use3d) {
             $checkout_url = $order->get_checkout_payment_url(true);
