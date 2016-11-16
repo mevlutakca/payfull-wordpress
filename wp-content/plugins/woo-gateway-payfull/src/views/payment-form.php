@@ -285,7 +285,10 @@ $VALS = [
                 }
 
                 var textOfCount = count==1 ? '<?php echo __('One Shot')?>' : count;
-                textOfCount     = hasExtra=='1'?'<span class="joker">'+count+' + Joker</span>' : textOfCount;
+                if(' <?php echo $enable_extra_installment; ?>' == true){
+                    textOfCount     = hasExtra=='1'?'<span class="joker">'+count+' + Joker</span>' : textOfCount;
+                }
+
 
                 return ''
                     + '<div class="installment_row">'
