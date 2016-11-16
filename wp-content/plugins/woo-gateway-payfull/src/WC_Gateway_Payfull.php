@@ -362,7 +362,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         $bank_id = isset($data['bank']) ? $data['bank'] : null;
         $gateway = isset($data['gateway']) ? $data['gateway'] : null;
 
-        if(!isset($gateway, $bank_id)) {
+        if(!isset($gateway, $bank_id) AND $installments > 1) {
             wc_add_notice( __('Invalid installment information.', 'payfull'), 'error' );
             return;
         }
@@ -565,7 +565,10 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             $installments  = __('Installment Commission'.' ('.$installments.')', 'payfull');
         }
         if($installments == 1){
-            $installments  = __('Commission', 'payfull');
+            $oneShotCommission = $this->payfull()->oneShotCommission();
+            $total             = $order->get_total();
+            $amount            = ($total*$oneShotCommission/100);
+            $installments      = __('Commission', 'payfull');
         }
 
         $fee            = new stdClass();
