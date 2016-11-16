@@ -21,4 +21,13 @@ $not_supported_img_path = plugins_url( 'images/payfull_creditcard_not_supported.
     float: left;
 }
 
+.joker {
+    border-radius: 25px;
+    font-weight: 600;
+    padding: 3px 10px;
+    background: #ff9800;
+    color: white;
+    text-transform: uppercase;
+}
+
 </style>

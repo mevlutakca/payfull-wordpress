@@ -170,7 +170,7 @@ $VALS = [
                 $.ajax({
                     url: "index.php?payfull-api=v1",
                     method: "POST",
-                    data: { command:"banks" },
+                    data: { command:"banks" , total: payfull.total, currency:'<?php echo $currencyAsText; ?>'},
                     dataType: "json",
                     success: function (response) {
                         payfull.banks = response.data;
@@ -271,10 +271,10 @@ $VALS = [
                 this.payWithInstallment(1, '', '');
             },
 
-            getInstallmentOption: function(count, amount, percentage, currency, has3d, bank, gateway) {
-                var commession = percentage;//percentage.replace('%', '');
-                var fee = amount * parseFloat(commession) / 100;
-                var total = amount * (1 + parseFloat(commession) / 100);
+            getInstallmentOption: function(count, amount, percentage, currency, has3d, bank, gateway, hasExtra) {
+                var commission = percentage;//percentage.replace('%', '');
+                var fee = amount * parseFloat(commission) / 100;
+                var total = amount * (1 + parseFloat(commission) / 100);
                 var pmon = total / count;
                 var checked = count==1 ? 'checked' : '';
 
@@ -284,13 +284,15 @@ $VALS = [
                     payfull.updateGrandTotal(total, payfull.currency);
                 }
 
+                var textOfCount = count==1 ? '<?php echo __('One Shot')?>' : count;
+                textOfCount     = hasExtra=='1'?'<span class="joker">'+count+' + Joker</span>' : textOfCount;
 
                 return ''
                     + '<div class="installment_row">'
                     + '<div class="install_body_label installment_radio">'
                     + '<input rel="'+count+'" data-fee="'+fee.toFixed(2)+'" data-total="'+total.toFixed(2)+'" data-has3d="'+has3d+'" data-bank="'+bank+'" data-gateway="'+gateway+'" class="custom_field_installment_radio" type="radio" '+checked+' name="payment[installment]" value="'+count+'" />'
                     + '</div>'
-                    + '<div class="install_body_label installment_lable_code">'+count+'</div>'
+                    + '<div class="install_body_label installment_lable_code">'+textOfCount+'</div>'
                     + '<div class="install_body_label">' + currency +' '+ pmon.toFixed(2) + '</div>'
                     + '<div rel="' + total + '" class="install_body_label final_commi_price">' + currency +' '+ parseFloat(total).toFixed(2) + '</div>'
                     + '</div>'
@@ -319,7 +321,7 @@ $VALS = [
 
                             fee = parseFloat(opt.commission);
                             t = Math.round(this.total * (1+fee)*100)/100;
-                            optEl = this.getInstallmentOption(opt.count, this.total, fee, this.currency, bank.has3d, bank.bank, bank.gateway) ;
+                            optEl = this.getInstallmentOption(opt.count, this.total, fee, this.currency, bank.has3d, bank.bank, bank.gateway, opt.hasExtra) ;
                             $e.append(optEl);
                         }
                         break;
@@ -473,6 +475,9 @@ $VALS = [
                 payOneShot: function () {
                     this.show3D(true);
                     this.payWithInstallment(1, '', '');
+                },
+
+                refreshInstallmentPlans: function (bankName, cardType) {
                 },
 
                 run: function () {

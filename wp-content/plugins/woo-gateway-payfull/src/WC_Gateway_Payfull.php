@@ -116,7 +116,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
                 $result = $this->payfull()->bin($data['bin']);
                 break;
             case 'banks':
-                $result = $this->payfull()->banks();
+                $result = $this->payfull()->banks($data);
                 break;
             case 'extra_ins':
                 $result = $this->payfull()->extraInstallments($data);

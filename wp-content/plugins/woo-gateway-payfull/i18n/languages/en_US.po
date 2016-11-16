@@ -246,3 +246,7 @@ msgstr ""
 #: src/views/payment-form.php:106
 msgid "Amount / Month"
 msgstr ""
+
+#: src/views/payment-form.php
+msgid "One Shot"
+msgstr ""

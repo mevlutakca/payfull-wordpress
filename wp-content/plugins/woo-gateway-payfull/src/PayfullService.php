@@ -35,13 +35,37 @@ class PayfullService {
         ]);
     }
     
-    public function banks()
+    public function banks($data)
     {
         $installments = $this->send('Get', [
             'get_param' => 'Installments',
         ]);
 
         $installments['oneShotCommission'] = $this->oneShotCommission();
+
+        $extraInstallmentsList = $this->extraInstallmentsList($data['currency']);
+        if(isset($extraInstallmentsList["data"]["campaigns"])){
+            foreach($extraInstallmentsList["data"]["campaigns"] as $extra_installments_row){
+                foreach($installments["data"] as $installmentsKey=>$installment_row){
+                    foreach($installment_row['installments'] as $installment_row_inst_key=>$installment_row_inst){
+                        if(
+                            $extra_installments_row['bank_id']           == $installment_row['bank'] AND
+                            $extra_installments_row['min_amount']        < ($data['total']*$extraInstallmentsList['data']['exchange_rate']) AND
+                            $extra_installments_row['base_installments'] == $installment_row_inst['count'] AND
+                            $extra_installments_row['status']            == 1 AND
+                            $extra_installments_row['gateway']           == $installment_row['gateway']
+                        ){
+                            $installments["data"][$installmentsKey]['installments'][$installment_row_inst_key]['hasExtra'] = 1;
+                        }else{
+                            $installments["data"][$installmentsKey]['installments'][$installment_row_inst_key]['hasExtra'] = 0;
+                        }
+
+                    }
+
+                }
+            }
+        }
+
         return $installments;
     }
 
@@ -71,6 +95,22 @@ class PayfullService {
             "bank_id"         => $data['bank'],
             "gateway"         => $data['gateway'],
         ]);
+    }
+
+    public function extraInstallmentsList($currency = false)
+    {
+        if($currency){
+            return $this->send('Get', [
+                'get_param'       => 'ExtraInstallmentsList',
+                "exchange_rate"   => '1',
+                "currency"        => $currency,
+            ]);
+        }else{
+            return $this->send('Get', [
+                'get_param'       => 'ExtraInstallmentsList',
+            ]);
+        }
+
     }
 
     public function getCommission($amount, $bankId, $installmentCount)
