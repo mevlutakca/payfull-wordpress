@@ -194,6 +194,12 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
                 'options'     => array(__( 'No', 'payfull' ),__( 'Yes', 'payfull' )),
                 'description' => __('Choose whether to enable extra installment option.', 'payfull'),
             ),
+            'enable_bkm' => array(
+                'title' => __('Enable BKM EXpress', 'payfull'),
+                'type' => 'select',
+                'options'     => array(__( 'No', 'payfull' ),__( 'Yes', 'payfull' )),
+                'description' => __('Choose whether to enable BKM Express gateway.', 'payfull'),
+            ),
             'total_selector' => array(
                 'title' => __('Total Selector', 'payfull'),
                 'type' => 'text',
