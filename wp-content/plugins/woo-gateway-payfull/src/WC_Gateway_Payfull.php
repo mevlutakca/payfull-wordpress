@@ -17,6 +17,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
     public $enable_3dSecure = 1;
     public $enable_installment = 1;
     public $enable_extra_installment = 0;
+    public $enable_bkm = 0;
     public $currency_class;
     public $total_selector;
     /**
@@ -53,6 +54,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         $this->enable_3dSecure = $this->get_option('enable_3dSecure');
         $this->enable_installment = $this->get_option('enable_installment');
         $this->enable_extra_installment = $this->get_option('enable_extra_installment');
+        $this->enable_bkm = $this->get_option('enable_bkm');
 
         if($register_hooks) {
             //$this->initApiService();
@@ -321,6 +323,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             'enable_3dSecure' => intval($this->enable_3dSecure) === 1,
             'enable_installment' => intval($this->enable_installment)===1,
             'enable_extra_installment' => intval($this->enable_extra_installment)===1,
+            'enable_bkm' => intval($this->enable_bkm)===1,
         ]);
         do_action( 'woocommerce_credit_card_form_end', $this->id );
     }

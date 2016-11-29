@@ -54,103 +54,126 @@ $VALS = [
     .installment_row {/* padding-top: 10px;*/}
     .install_body_label.installment_radio, .installmet_head .install_head_label.add_space {height: 40px;text-align: center;width: 10%;line-height: 40px;}
     #installment_table_id {background-color: #eee;border: 1px solid;border-radius: 5px;padding: 10px;margin-top: 20px;}
-
     .installmet_head .install_head_label {float: left;font-weight: bold;text-align: center;width: 30%; height: 40px;line-height: 40px;border-bottom: 2px solid #d2d2d2; }
     .installment_body , .installment_footer {  clear: both; }
     .toatl_label {display:  none;}
+    /* Style the list */
+    ul.tab {  list-style-type: none;  margin: 0;  padding: 0;  overflow: hidden;  border: 1px solid #ccc;  background-color: #f1f1f1;  }
+    /* Float the list items side by side */
+    ul.tab li {float: left;}
+    /* Style the links inside the list items */
+    ul.tab li a {  display: inline-block;  color: black;  text-align: center;  padding: 14px 16px;  text-decoration: none;  transition: 0.3s;  font-size: 17px;  }
+    /* Change background color of links on hover */
+    ul.tab li a:hover {background-color: #ddd;}
+    /* Create an active/current tablink class */
+    ul.tab li a:focus, .active {background-color: #ccc;}
+    /* Style the tab content */
+    .tabcontent {  display: none;  padding: 6px 12px;  border: 1px solid #ccc;  border-top: none;  }
+    .bkmImage {  max-width: 125px;  }
+    .bkmTab {  padding: 2px !important;  }
 </style>
 <form method="post" class="col-md-6">
     <div class="fieldset" id="<?php echo $IDS['cardset']; ?>">
+        <?php if($enable_bkm):?>
+            <ul class="tab">
+                <li><a href="javascript:void(0)" class="tablinks active" data-method="cardPaymentMethod"><?php echo __('Credit card/Debit card'); ?></a></li>
+                <li><a href="javascript:void(0)" class="tablinks bkmTab" data-method="bkmPaymentMethod"><img class="bkmImage" src="<?php echo $bankImagesPath; ?>/BKM.png"></a></li>
+            </ul>
+        <?php endif;?>
         <?php //do_action( 'woocommerce_credit_card_form_start', $this->id ); ?>
-        <p class="form-row form-row-wide">
-            <label for="<?php echo $IDS['holder']; ?>"><?php echo $LBLS['holder']; ?> <span class="required">*</span></label>
-            <input id="<?php echo $IDS['holder']; ?>" value="<?php echo $VALS['holder']; ?>" class="input-text wc-credit-card-form-card-holder" type="text" maxlength="20" autocomplete="off" placeholder="" name="card[holder]" />
-        </p>
+        <?php if($enable_bkm):?>
+            <div class="tabcontent" id="cardPaymentMethod" style="display: block;">
+        <?php endif;?>
+                <p class="form-row form-row-wide">
+                    <label for="<?php echo $IDS['holder']; ?>"><?php echo $LBLS['holder']; ?> <span class="required">*</span></label>
+                    <input id="<?php echo $IDS['holder']; ?>" value="<?php echo $VALS['holder']; ?>" class="input-text wc-credit-card-form-card-holder" type="text" maxlength="20" autocomplete="off" placeholder="" name="card[holder]" />
+                </p>
+                <p class="form-row form-row-wide">
+                    <label for="<?php echo $IDS['pan']; ?>"><?php echo $LBLS['pan']; ?> <span class="required">*</span></label>
+                    <input value="<?php echo $VALS['pan']; ?>" id="<?php echo $IDS['pan']; ?>" data-value="<?php echo $VALS['pan']; ?>" class="input-text wc-credit-card-form-card-number input-cc-number-not-supported" type="text" maxlength="20" autocomplete="off" placeholder="•••• •••• •••• ••••" name="card[pan]" />
+                </p>
+                <div class="form-row form-row-wide">
+                    <p class="form-row form-row-first">
+                        <label for="<?php echo $IDS['month']; ?>"><?php echo $LBLS['month']; ?> <span class="required">*</span></label>
+                        <select id="<?php echo $IDS['month']; ?>" name="card[month]" class="input-text wc-credit-card-form-card-month">
+                            <option value=""><?php echo __('Month', 'payfull'); ?></option>
+                            <?php for($i=1;$i<=12;$i++) : ?>
+                                <?php $i = (strlen($i) == 2)?$i:'0'.$i; ?>
+                                <?php $selected = $i==$VALS['month'] ? 'selected' : ''; ?>
+                                <option value="<?php echo $i;?>" <?php echo $selected; ?> ><?php echo $i;?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </p>
 
-        <p class="form-row form-row-wide">
-            <label for="<?php echo $IDS['pan']; ?>"><?php echo $LBLS['pan']; ?> <span class="required">*</span></label>
-            <input value="<?php echo $VALS['pan']; ?>" id="<?php echo $IDS['pan']; ?>" data-value="<?php echo $VALS['pan']; ?>" class="input-text wc-credit-card-form-card-number input-cc-number-not-supported" type="text" maxlength="20" autocomplete="off" placeholder="•••• •••• •••• ••••" name="card[pan]" />
-        </p>
-
-        <div class="form-row form-row-wide">
-            <p class="form-row form-row-first">
-                <label for="<?php echo $IDS['month']; ?>"><?php echo $LBLS['month']; ?> <span class="required">*</span></label>
-                <select id="<?php echo $IDS['month']; ?>" name="card[month]" class="input-text wc-credit-card-form-card-month">
-                    <option value=""><?php echo __('Month', 'payfull'); ?></option>
-                    <?php for($i=1;$i<=12;$i++) : ?>
-                        <?php $i = (strlen($i) == 2)?$i:'0'.$i; ?>
-                        <?php $selected = $i==$VALS['month'] ? 'selected' : ''; ?>
-                        <option value="<?php echo $i;?>" <?php echo $selected; ?> ><?php echo $i;?></option>
-                    <?php endfor; ?>
-                </select>
-            </p>
-
-            <p class="form-row form-row-last">
-                <label for="<?php echo $IDS['year']; ?>"><?php echo $LBLS['year']; ?> <span class="required">*</span></label>
-                <select id="<?php echo $IDS['year']; ?>" name="card[year]" class="input-text wc-credit-card-form-card-year">
-                    <option value=""><?php echo __('Year', 'payfull'); ?></option>
-                    <?php for($i=0;$i<15;$i++) : ?>
-                        <?php $year = date('Y') + $i; ?>
-                        <?php $selected = $year==$VALS['year'] ? 'selected' : ''; ?>
-                        <option value="<?php echo $year;?>" <?php echo $selected; ?> ><?php echo $year;?></option>
-                    <?php endfor; ?>
-                </select>
-            </p>
-        </div>
-
-        <p class="form-row form-row-wide">
-            <label for="<?php echo $IDS['cvc']; ?>"><?php echo $LBLS['cvc']; ?> <span class="required">*</span></label>
-            <input id="<?php echo $IDS['cvc']; ?>" value="<?php echo $VALS['cvc']; ?>" class="input-text wc-credit-card-form-card-cvc" type="text" autocomplete="off" placeholder="CVC" name="card[cvc]" />
-        </p>
-
-        <?php if($enable_installment) : ?>
-        <p class="form-row installment">
-            <div id="installment_table_id">
-                <div class="installmet_head">
-                    <div class="install_head_label add_space"><img style="display: none" class="bank_photo" data-src="<?php echo $bankImagesPath; ?>" src=""></div>
-                    <div class="install_head_label"><?php echo __('Installmet', 'payfull') ?></div>
-                    <div class="install_head_label"><?php echo __('Amount / Month', 'payfull') ?></div>
-                    <div class="install_head_label"><?php echo __('Total', 'payfull') ?></div>
+                    <p class="form-row form-row-last">
+                        <label for="<?php echo $IDS['year']; ?>"><?php echo $LBLS['year']; ?> <span class="required">*</span></label>
+                        <select id="<?php echo $IDS['year']; ?>" name="card[year]" class="input-text wc-credit-card-form-card-year">
+                            <option value=""><?php echo __('Year', 'payfull'); ?></option>
+                            <?php for($i=0;$i<15;$i++) : ?>
+                                <?php $year = date('Y') + $i; ?>
+                                <?php $selected = $year==$VALS['year'] ? 'selected' : ''; ?>
+                                <option value="<?php echo $year;?>" <?php echo $selected; ?> ><?php echo $year;?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </p>
                 </div>
-                <div class="installment_body" id="installment_body">
-                    <div class="installment_row">
-                        <div class="install_body_label installment_radio"><input rel="1" type="radio" class="installment_radio" checked name="payment[installment]" value="1" /></div>
-                        <div class="install_body_label installment_lable_code">1</div>
-                        <div class="install_body_label"><?php echo $currency.' '.$grandTotal; ?></div>
-                        <div class="install_body_label final_commi_price" rel="<?php echo $grandTotal; ?>"><?php echo $currency.' '.$grandTotal; ?></div>
+                <p class="form-row form-row-wide">
+                    <label for="<?php echo $IDS['cvc']; ?>"><?php echo $LBLS['cvc']; ?> <span class="required">*</span></label>
+                    <input id="<?php echo $IDS['cvc']; ?>" value="<?php echo $VALS['cvc']; ?>" class="input-text wc-credit-card-form-card-cvc" type="text" autocomplete="off" placeholder="CVC" name="card[cvc]" />
+                </p>
+                <?php if($enable_installment) : ?>
+                <p class="form-row installment">
+                    <div id="installment_table_id">
+                        <div class="installmet_head">
+                            <div class="install_head_label add_space"><img style="display: none" class="bank_photo" data-src="<?php echo $bankImagesPath; ?>" src=""></div>
+                            <div class="install_head_label"><?php echo __('Installmet', 'payfull') ?></div>
+                            <div class="install_head_label"><?php echo __('Amount / Month', 'payfull') ?></div>
+                            <div class="install_head_label"><?php echo __('Total', 'payfull') ?></div>
+                        </div>
+                        <div class="installment_body" id="installment_body">
+                            <div class="installment_row">
+                                <div class="install_body_label installment_radio"><input rel="1" type="radio" class="installment_radio" checked name="payment[installment]" value="1" /></div>
+                                <div class="install_body_label installment_lable_code">1</div>
+                                <div class="install_body_label"><?php echo $currency.' '.$grandTotal; ?></div>
+                                <div class="install_body_label final_commi_price" rel="<?php echo $grandTotal; ?>"><?php echo $currency.' '.$grandTotal; ?></div>
+                            </div>
+                        </div>
+                        <div class="installment_footer"></div>
                     </div>
+                    <input id="<?php echo $IDS['bank']; ?>" type="hidden" name="bank" value="<?php echo $VALS['bank']; ?>" />
+                    <input id="<?php echo $IDS['gateway']; ?>" type="hidden" name="gateway" value="<?php echo $VALS['gateway']; ?>" />
+                    <input id="<?php echo $IDS['installment']; ?>" type="hidden" name="installment" value="<?php echo $VALS['installment']; ?>" />
+                </p>
+                <?php endif; ?>
+                <?php if($enable_extra_installment) : ?>
+                <div class="form-row form-row-wide extra_installments_container" style="display: none">
+                    <p class="form-row form-row-first" >
+                        <label><?php echo __('Extra Installmets', 'payfull') ?></label>
+                    </p>
+                    <div class="clear"></div>
+                    <div class="extra_installments_select form-row-first"></div>
                 </div>
-                <div class="installment_footer"></div>
-            </div>
-            <input id="<?php echo $IDS['bank']; ?>" type="hidden" name="bank" value="<?php echo $VALS['bank']; ?>" />
-            <input id="<?php echo $IDS['gateway']; ?>" type="hidden" name="gateway" value="<?php echo $VALS['gateway']; ?>" />
-            <input id="<?php echo $IDS['installment']; ?>" type="hidden" name="installment" value="<?php echo $VALS['installment']; ?>" />
-        </p>
-        <?php endif; ?>
-
-        <?php if($enable_extra_installment) : ?>
-        <div class="form-row form-row-wide extra_installments_container" style="display: none">
-            <p class="form-row form-row-first" >
-                <label><?php echo __('Extra Installmets', 'payfull') ?></label>
+                <?php endif; ?>
+                <?php if($enable_3dSecure) : ?>
+            <p class="form-row form-row-wide payfull-3dsecure" id="<?php echo $IDS['use3d-row'] ?>">
+                <label for="<?php echo $IDS['use3d']; ?>">
+                    <input <?php if(isset($VALS['use3d'])AND$VALS['use3d']) echo 'checked'; ?> id="<?php echo $IDS['use3d']; ?>" class="input-checkbox payfull-options-use3d" type="checkbox" name="use3d" value="true" />
+                    <?php echo $LBLS['use3d']; ?>
+                </label>
             </p>
-            <div class="clear"></div>
-            <div class="extra_installments_select form-row-first"></div>
+            <?php endif; ?>
+        <?php if($enable_bkm):?>
+            </div>
+            <div class="tabcontent" id="bkmPaymentMethod">
+        <p> <?php echo __('dddd'); ?></p>
+        <input id="useBKM" name="useBKM" type="hidden" value="0" />
         </div>
-        <?php endif; ?>
-
-        <?php if($enable_3dSecure) : ?>
-        <p class="form-row form-row-wide payfull-3dsecure" id="<?php echo $IDS['use3d-row'] ?>">
-            <label for="<?php echo $IDS['use3d']; ?>">
-                <input <?php if(isset($VALS['use3d'])AND$VALS['use3d']) echo 'checked'; ?> id="<?php echo $IDS['use3d']; ?>" class="input-checkbox payfull-options-use3d" type="checkbox" name="use3d" value="true" />
-                <?php echo $LBLS['use3d']; ?>
-            </label>
-        </p>
-        <?php endif; ?>
+        <?php endif;?>
 
         <?php //do_action( 'woocommerce_credit_card_form_end', $this->id ); ?>
         <div class="clear"></div>
-    </div>
-    <input type="submit" value="Pay" >
+
+        <input type="submit" value="Pay" >
 </form>
 
 <?php if($enable_installment) : ?>
@@ -503,6 +526,9 @@ $VALS = [
                     if (this.init) {
                         this.init();
                     }
+
+//                    $('#cardPaymentMethodTab').click(function(){ payfull.openPaymentMethod($(this), 'cardPaymentMethod'); });
+//                    $('#bkmPaymentMethodTab').click(function(){ payfull.openPaymentMethod($(this), 'bkmPaymentMethod'); });
                 }
             };
 
@@ -515,5 +541,37 @@ $VALS = [
         payfull.run();
     })(jQuery);
 </script>
+    <script type="text/javascript">
+        (function ($) {
+            $('.tablinks').click(function(evt){
+                methodName = $(this).attr('data-method');
+                // Declare all variables
+                var i, tabcontent, tablinks;
+
+                // Get all elements with class="tabcontent" and hide them
+                tabcontent = document.getElementsByClassName("tabcontent");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
+                }
+
+                // Get all elements with class="tablinks" and remove the class "active"
+                tablinks = document.getElementsByClassName("tablinks");
+                for (i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(" active", "");
+                }
+
+                // Show the current tab, and add an "active" class to the link that opened the tab
+                document.getElementById(methodName).style.display = "block";
+                evt.currentTarget.className += " active";
+                if(methodName == 'bkmPaymentMethod'){
+                    $('#useBKM').val(1);
+                }else{
+                    $('#useBKM').val(0);
+                }
+
+            });
+        })(jQuery);
+    </script>
+
 
 <?php $this->renderView(__DIR__."/card-brand.css.php");?>
