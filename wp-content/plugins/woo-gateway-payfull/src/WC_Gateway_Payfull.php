@@ -390,21 +390,39 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             $request['use3d'] = 1;
             $request['return_url'] = $return_url;
         }
+
+        $data["useBKM"] = isset($data["useBKM"])?$data["useBKM"]:0;
+        if($data["useBKM"]){
+            unset($request['cc_name']);
+            unset($request['cc_number']);
+            unset($request['cc_month']);
+            unset($request['cc_year']);
+            unset($request['cc_cvc']);
+            $request['installments'] = $this->enable_installment;
+            $request['bank_id']      = 'BKMExpress';
+            $checkout_url            = $order->get_checkout_payment_url(true);
+            $return_url              = add_query_arg(['order-id'=>$order->id, 'wc-api'=>'WC_Gateway_Payfull'], $checkout_url);
+            $request['return_url']   = $return_url;
+        }
+
+        $return_json = !($use3d OR $data["useBKM"]);
         
-        $response = $this->payfull()->send('Sale', $request, !$use3d);
-        
-        if($use3d) {
-            if(strpos($response, '<html>')===false) {
+        $response = $this->payfull()->send('Sale', $request, $return_json);
+
+        if($use3d or $data["useBKM"]) {
+            if(strpos($response, '<html>')===false AND json_decode($response) == null) {
                 $error = $this->getErrorMessage($response,__('Invalid response received.', 'payfull'));
                 //$order->update_status('wc-failed', $error);
                 wc_add_notice( $error, 'error' );
-                $order->add_order_note('Fail to pay in 3D secure. ' . $error);
+                $order->add_order_note('Could not complete the transaction.' . $error);
                 return;
+            }elseif(strpos($response, '<html>')!==false){
+                echo $response;
+                exit;
             }
-            echo $response;
-            exit;
         }
-        
+
+        $response = (json_decode($response) == null)?$response:(array)json_decode($response);
         if($this->processPaymentResponse($order, $response)) {
             $message = __('Thank you for shopping with us. Your transaction is succeeded.', 'payfull');
             wc_add_notice($message);
@@ -563,6 +581,15 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         if($this->enable_installment && (!isset($form['installment']) || intval($form['installment'])<1)) {
             $errors[] = __('The installment value must be a positive integer.', 'payfull');
         }
+
+        if(!$this->enable_bkm AND isset($form['useBKM']) AND $form['useBKM']) {
+            $errors[] = __('BKM Express is inactive.', 'payfull');
+        }
+
+        if($this->enable_bkm AND isset($form['useBKM']) AND $form['useBKM']) {
+            $errors = [];
+        }
+
         
         return count($errors) ? $errors : true;
     }

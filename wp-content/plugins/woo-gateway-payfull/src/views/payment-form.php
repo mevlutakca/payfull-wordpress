@@ -58,18 +58,18 @@ $VALS = [
     .installment_body , .installment_footer {  clear: both; }
     .toatl_label {display:  none;}
     /* Style the list */
-    ul.tab {  list-style-type: none;  margin: 0;  padding: 0;  overflow: hidden;  border: 1px solid #ccc;  background-color: #f1f1f1;  }
+    ul.tab {  list-style-type: none;  margin: 0;  padding: 0;  overflow: hidden;  border: 1px solid #ccc;  background-color: #f1f1f1; height: 61px; }
     /* Float the list items side by side */
-    ul.tab li {float: left;}
+    ul.tab li {float: left; height: 61px;}
     /* Style the links inside the list items */
-    ul.tab li a {  display: inline-block;  color: black;  text-align: center;  padding: 14px 16px;  text-decoration: none;  transition: 0.3s;  font-size: 17px;  }
+    ul.tab li a {  display: inline-block;  color: black;  text-align: center;  padding: 14px 16px;  text-decoration: none;  transition: 0.3s;  font-size: 17px; height: 61px; }
     /* Change background color of links on hover */
     ul.tab li a:hover {background-color: #ddd;}
     /* Create an active/current tablink class */
     ul.tab li a:focus, .active {background-color: #ccc;}
     /* Style the tab content */
     .tabcontent {  display: none;  padding: 6px 12px;  border: 1px solid #ccc;  border-top: none;  }
-    .bkmImage {  max-width: 125px;  }
+    .bkmImage {  height: 100% !important;  }
     .bkmTab {  padding: 2px !important;  }
 </style>
 <form method="post" class="col-md-6">
@@ -165,7 +165,12 @@ $VALS = [
         <?php if($enable_bkm):?>
             </div>
             <div class="tabcontent" id="bkmPaymentMethod">
-        <p> <?php echo __('dddd'); ?></p>
+        <p> <?php echo __(' BKM Express is a payment system that makes online shopping fast,
+                            easy and joyful, developed with BKM, banks and leading companies of e-commerce area.
+                            Card owners can shop without sharing any card information online by saving their cards on BKM Express.
+                            The places of business that accept card on e-commerce websites can approach more customers as a Member Place of Business of BKM Express.
+                            '); ?>
+        </p>
         <input id="useBKM" name="useBKM" type="hidden" value="0" />
         </div>
         <?php endif;?>
