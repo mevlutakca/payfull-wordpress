@@ -72,7 +72,7 @@ $VALS = [
     .bkmImage {  height: 100% !important;  }
     .bkmTab {  padding: 2px !important;  }
 </style>
-<form method="post" class="col-md-6">
+<form method="post" class="col-md-12">
     <div class="fieldset" id="<?php echo $IDS['cardset']; ?>">
         <?php if($enable_bkm):?>
             <ul class="tab">
@@ -165,11 +165,10 @@ $VALS = [
         <?php if($enable_bkm):?>
             </div>
             <div class="tabcontent" id="bkmPaymentMethod">
-        <p> <?php echo __(' BKM Express is a payment system that makes online shopping fast,
-                            easy and joyful, developed with BKM, banks and leading companies of e-commerce area.
-                            Card owners can shop without sharing any card information online by saving their cards on BKM Express.
-                            The places of business that accept card on e-commerce websites can approach more customers as a Member Place of Business of BKM Express.
-                            '); ?>
+        <p> <?php echo __(' BKM Express ile ödeme yaparken www.bkmexpress.com.tr sayfasına yönlendirileceksiniz.
+                            BKM Express sitesine üye olurken kullandığınız kullanıcı adı ve şifreniz ile uygulamaya giriş yapmanız gerekmektedir.
+                            Karşınıza gelen ödeme ekranından işlem yapmak istediğiniz kartı ve ödeme şeklini seçerek kolayca ödeme yapabilirsiniz.
+                            Alışverişinizi tamamladıktan sonra otomatik olarak sitemize yönlendirileceksiniz.'); ?>
         </p>
         <input id="useBKM" name="useBKM" type="hidden" value="0" />
         </div>
