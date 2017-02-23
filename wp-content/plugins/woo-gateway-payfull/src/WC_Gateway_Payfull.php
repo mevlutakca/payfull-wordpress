@@ -410,13 +410,13 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         $response = $this->payfull()->send('Sale', $request, $return_json);
 
         if($use3d or $data["useBKM"]) {
-            if(strpos($response, '<html>')===false AND json_decode($response) == null) {
+            if(strpos($response, '<html')===false AND json_decode($response) == null) {
                 $error = $this->getErrorMessage($response,__('Invalid response received.', 'payfull'));
                 //$order->update_status('wc-failed', $error);
                 wc_add_notice( $error, 'error' );
                 $order->add_order_note('Could not complete the transaction.' . $error);
                 return;
-            }elseif(strpos($response, '<html>')!==false){
+            }elseif(strpos($response, '<html')!==false){
                 echo $response;
                 exit;
             }
