@@ -20,6 +20,11 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
     public $enable_bkm = 0;
     public $currency_class;
     public $total_selector;
+
+
+
+    // force 3d added by Mevlut @2017-03-06T23:30
+    public $enable_3dSecure = 1;
     /**
      * @var array the HTML attributes to resner the iframe
      */
@@ -55,6 +60,12 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
         $this->enable_installment = $this->get_option('enable_installment');
         $this->enable_extra_installment = $this->get_option('enable_extra_installment');
         $this->enable_bkm = $this->get_option('enable_bkm');
+
+
+        // force 3d added by Mevlut @2017-03-06T23:30
+        $this->force_3dSecure = $this->get_option('force_3dSecure');
+
+
 
         if($register_hooks) {
             //$this->initApiService();
@@ -220,6 +231,13 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
                 'default' => file_get_contents (WP_PLUGIN_DIR. '/woo-gateway-payfull/assets/custom.css'),
                 // 'description' => __('Customiz the installments table.', 'payfull'),
             ],
+            // force 3d added by Mevlut @2017-03-06T23:30
+            'force_3dSecure' => array(
+                'title' => __('Force 3D secure always', 'payfull'),
+                'type' => 'select',
+                'options'     => array(__( 'Disabled', 'payfull' ),__( 'Enabled', 'payfull' )),
+                'description' => __('if this option is enabled all transaction must be in 3D secure mode.', 'payfull'),
+            ),
         ];
     }
 
@@ -324,6 +342,8 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
             'enable_installment' => intval($this->enable_installment)===1,
             'enable_extra_installment' => intval($this->enable_extra_installment)===1,
             'enable_bkm' => intval($this->enable_bkm)===1,
+            // force 3d added by Mevlut @2017-03-06T23:30
+            'force_3dSecure' => intval($this->force_3dSecure) === 1
         ]);
         do_action( 'woocommerce_credit_card_form_end', $this->id );
     }
@@ -337,6 +357,12 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
 
         if($this->enable_3dSecure && isset($data['use3d'])) {
             $use3d = ($data['use3d']=="true");
+        }
+
+        // force 3d added by Mevlut @2017-03-06T23:30
+        if ( $this->force_3dSecure && ! $use3d ){
+            wc_add_notice( __('All transactions must be in 3d.', 'payfull'), 'error' );
+            return;
         }
 
         if($this->enable_installment && isset($data['installment'])) {
