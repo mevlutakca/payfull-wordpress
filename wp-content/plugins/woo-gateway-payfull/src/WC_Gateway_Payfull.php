@@ -24,7 +24,7 @@ class WC_Gateway_Payfull extends WC_Payment_Gateway
 
 
     // force 3d added by Mevlut @2017-03-06T23:30
-    public $enable_3dSecure = 1;
+    public $force_3dSecure = 1;
     /**
      * @var array the HTML attributes to resner the iframe
      */
